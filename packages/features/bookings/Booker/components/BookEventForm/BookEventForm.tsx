@@ -56,6 +56,40 @@ export const BookEventForm = ({
   const [responseVercelIdHeader] = useState<string | null>(null);
   const { t } = useLocale();
 
+  useEffect(() => {
+    if (!window) {
+      return;
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const iframeId = window?.frameElement?.id || null;
+
+      if (!iframeId) {
+        return;
+      }
+
+      // Function to add event listeners to elements
+      function addClickListener(selector, message) {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach((element) => {
+          element.addEventListener("click", function () {
+            window.parent.postMessage({ message, iframeId }, "*");
+          });
+        });
+      }
+
+      // Add click event listeners
+      addClickListener('[data-testid="time"]', "slotClicked");
+      addClickListener('[data-testid="back"]', "returnClicked");
+      const cancelElement = document.getElementById("cancel");
+      if (cancelElement) {
+        cancelElement.addEventListener("click", function () {
+          window.parent.postMessage({ message: "cancelClicked", iframeId }, "*");
+        });
+      }
+    });
+  }, []);
+
   const isPaidEvent = useMemo(() => {
     if (!eventType?.price) return false;
     const paymentAppData = getPaymentAppData(eventType);
