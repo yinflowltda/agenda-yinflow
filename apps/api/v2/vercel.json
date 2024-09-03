@@ -7,15 +7,14 @@
   },
   "builds": [
     {
-      "src": "src/main.ts",
+      "src": "package.json",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "src/main.ts",
-      "methods": ["GET", "PATCH", "DELETE", "HEAD", "POST", "PUT", "OPTIONS"]
+      "dest": "/dist/main"
     }
   ]
 }
