@@ -1,14 +1,12 @@
-import { Controller, Get, Version, VERSION_NEUTRAL } from "@nestjs/common";
-import { ApiTags as DocsTags, ApiExcludeController as DocsExcludeController } from "@nestjs/swagger";
-import { getEnv } from "src/env";
+import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
 
 @Controller()
-@DocsTags("Health - development only")
-@DocsExcludeController(getEnv("NODE_ENV") === "production")
 export class AppController {
-  @Get("health")
-  @Version(VERSION_NEUTRAL)
-  getHealth(): "OK" {
-    return "OK";
+  constructor(private readonly appService: AppService) {}
+
+  @Get()
+  getHello(): string {
+    return this.appService.getHello();
   }
 }
