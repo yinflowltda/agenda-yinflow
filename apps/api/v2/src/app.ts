@@ -2,9 +2,7 @@ import "./instrument";
 
 import type { ValidationError } from "@nestjs/common";
 import { BadRequestException, ValidationPipe, VersioningType } from "@nestjs/common";
-import { BaseExceptionFilter, HttpAdapterHost } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
-import * as Sentry from "@sentry/node";
 import * as cookieParser from "cookie-parser";
 import { Request } from "express";
 import helmet from "helmet";
@@ -14,9 +12,9 @@ import { ZodExceptionFilter } from "src/filters/zod-exception.filter";
 
 import {
   API_VERSIONS,
-  VERSION_2024_04_15,
   API_VERSIONS_ENUM,
   CAL_API_VERSION_HEADER,
+  VERSION_2024_04_15,
   X_CAL_CLIENT_ID,
   X_CAL_SECRET_KEY,
 } from "@calcom/platform-constants";
@@ -70,10 +68,6 @@ export const bootstrap = (app: NestExpressApplication): NestExpressApplication =
   );
 
   // Exception filters, new filters go at the bottom, keep the order
-  const { httpAdapter } = app.get(HttpAdapterHost);
-  if (process.env.SENTRY_DSN) {
-    Sentry.setupNestErrorHandler(app, new BaseExceptionFilter(httpAdapter));
-  }
   app.useGlobalFilters(new PrismaExceptionFilter());
   app.useGlobalFilters(new ZodExceptionFilter());
   app.useGlobalFilters(new HttpExceptionFilter());
