@@ -1,0 +1,26 @@
+import { logLevels } from "src/lib/logger";
+
+export type Environment = {
+  NODE_ENV: "development" | "production";
+  API_PORT: string;
+  API_URL: string;
+  DATABASE_READ_URL: string;
+  DATABASE_WRITE_URL: string;
+  NEXTAUTH_SECRET: string;
+  DATABASE_URL: string;
+  JWT_SECRET: string;
+  SENTRY_DSN: string;
+  LOG_LEVEL: keyof typeof logLevels;
+  REDIS_URL: string;
+  STRIPE_API_KEY: string;
+  STRIPE_WEBHOOK_SECRET: string;
+  WEB_APP_URL: string;
+  IS_E2E: boolean;
+  CALCOM_LICENSE_KEY: string;
+  GET_LICENSE_KEY_URL: string;
+  API_KEY_PREFIX: string;
+};
+export declare const getEnv: <K extends keyof Environment>(
+  key: K,
+  fallback?: Environment[K] | undefined
+) => Environment[K];

@@ -1,0 +1,99 @@
+"use strict";
+var __decorate =
+  (this && this.__decorate) ||
+  function (decorators, target, key, desc) {
+    var c = arguments.length,
+      r = c < 3 ? target : desc === null ? (desc = Object.getOwnPropertyDescriptor(target, key)) : desc,
+      d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if ((d = decorators[i])) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+var __metadata =
+  (this && this.__metadata) ||
+  function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+  };
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.KeysResponseDto = void 0;
+const openapi = require("@nestjs/swagger");
+const swagger_1 = require("@nestjs/swagger");
+const class_transformer_1 = require("class-transformer");
+const class_validator_1 = require("class-validator");
+const platform_constants_1 = require("@calcom/platform-constants");
+class KeysDto {
+  static _OPENAPI_METADATA_FACTORY() {
+    return {
+      accessToken: { required: true, type: () => String },
+      refreshToken: { required: true, type: () => String },
+      accessTokenExpiresAt: { required: true, type: () => Number },
+    };
+  }
+}
+__decorate(
+  [
+    (0, swagger_1.ApiProperty)({
+      example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+    }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String),
+  ],
+  KeysDto.prototype,
+  "accessToken",
+  void 0
+);
+__decorate(
+  [
+    (0, swagger_1.ApiProperty)({
+      example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+    }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String),
+  ],
+  KeysDto.prototype,
+  "refreshToken",
+  void 0
+);
+__decorate(
+  [(0, class_validator_1.IsNumber)(), __metadata("design:type", Number)],
+  KeysDto.prototype,
+  "accessTokenExpiresAt",
+  void 0
+);
+class KeysResponseDto {
+  static _OPENAPI_METADATA_FACTORY() {
+    return { status: { required: true, type: () => Object }, data: { required: true, type: () => KeysDto } };
+  }
+}
+__decorate(
+  [
+    (0, swagger_1.ApiProperty)({
+      example: platform_constants_1.SUCCESS_STATUS,
+      enum: [platform_constants_1.SUCCESS_STATUS, platform_constants_1.ERROR_STATUS],
+    }),
+    (0, class_validator_1.IsEnum)([platform_constants_1.SUCCESS_STATUS, platform_constants_1.ERROR_STATUS]),
+    __metadata("design:type", Object),
+  ],
+  KeysResponseDto.prototype,
+  "status",
+  void 0
+);
+__decorate(
+  [
+    (0, swagger_1.ApiProperty)({
+      type: KeysDto,
+    }),
+    (0, class_validator_1.IsNotEmptyObject)(),
+    (0, class_validator_1.ValidateNested)(),
+    (0, class_transformer_1.Type)(() => KeysDto),
+    __metadata("design:type", KeysDto),
+  ],
+  KeysResponseDto.prototype,
+  "data",
+  void 0
+);
+exports.KeysResponseDto = KeysResponseDto;
+//# sourceMappingURL=KeysResponse.dto.js.map
