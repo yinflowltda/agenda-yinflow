@@ -1,11 +1,19 @@
 import type { TFunction } from "next-i18next";
 import { Trans } from "next-i18next";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { FieldError } from "react-hook-form";
 
+import { useIsPlatformBookerEmbed } from "@calcom/atoms/monorepo";
 import type { BookerEvent } from "@calcom/features/bookings/types";
-import { IS_CALCOM, WEBSITE_URL } from "@calcom/lib/constants";
+import {
+  CLOUDFLARE_SITE_ID,
+  CLOUDFLARE_USE_TURNSTILE_IN_BOOKER,
+  WEBSITE_PRIVACY_POLICY_URL,
+  WEBSITE_TERMS_URL,
+  WEBSITE_URL,
+} from "@calcom/lib/constants";
 import getPaymentAppData from "@calcom/lib/getPaymentAppData";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { Alert, Button, EmptyScreen, Form } from "@calcom/ui";
@@ -15,6 +23,8 @@ import type { UseBookingFormReturnType } from "../hooks/useBookingForm";
 import type { IUseBookingErrors, IUseBookingLoadingStates } from "../hooks/useBookings";
 import { BookingFields } from "./BookingFields";
 import { FormSkeleton } from "./Skeleton";
+
+const TurnstileCaptcha = dynamic(() => import("@calcom/features/auth/Turnstile"), { ssr: false });
 
 type BookEventFormProps = {
   onCancel?: () => void;
@@ -28,6 +38,7 @@ type BookEventFormProps = {
   extraOptions: Record<string, string | string[]>;
   isPlatform?: boolean;
   isVerificationCodeSending: boolean;
+  renderCaptcha?: boolean;
 };
 
 export const BookEventForm = ({
@@ -44,6 +55,7 @@ export const BookEventForm = ({
   extraOptions,
   isVerificationCodeSending,
   isPlatform = false,
+  renderCaptcha,
 }: Omit<BookEventFormProps, "event"> & {
   eventQuery: {
     isError: boolean;
@@ -62,6 +74,14 @@ export const BookEventForm = ({
   const [nameError, setNameError] = useState(false);
   const [showError, setShowError] = useState(false);
   const [formState, setFormState] = useState("undefined");
+  const isPlatformBookerEmbed = useIsPlatformBookerEmbed();
+
+  // Cloudflare Turnstile Captcha
+  const shouldRenderCaptcha =
+    !process.env.NEXT_PUBLIC_IS_E2E &&
+    renderCaptcha &&
+    CLOUDFLARE_SITE_ID &&
+    CLOUDFLARE_USE_TURNSTILE_IN_BOOKER === "1";
 
   const [responseVercelIdHeader] = useState<string | null>(null);
   const { t } = useLocale();
@@ -109,6 +129,8 @@ export const BookEventForm = ({
     return <Alert severity="warning" message={t("error_booking_event")} />;
   }
 
+  const watchedCfToken = bookingForm.watch("cfToken");
+
   return (
     <div className="flex h-full flex-col">
       <Form
@@ -154,8 +176,17 @@ export const BookEventForm = ({
             />
           </div>
         )}
-        {!isPlatform && IS_CALCOM && (
-          <div className="text-subtle my-3 w-full text-xs opacity-80">
+        {/* Cloudflare Turnstile Captcha */}
+        {shouldRenderCaptcha ? (
+          <TurnstileCaptcha
+            appearance="interaction-only"
+            onVerify={(token) => {
+              bookingForm.setValue("cfToken", token);
+            }}
+          />
+        ) : null}
+        {!isPlatform && (
+          <div className="text-subtle my-3 w-full text-xs">
             <Trans
               i18nKey="signing_up_terms"
               components={[
@@ -177,6 +208,28 @@ export const BookEventForm = ({
             />
           </div>
         )}
+
+        {isPlatformBookerEmbed && (
+          <div className="text-subtle my-3 w-full text-xs">
+            {t("proceeding_agreement")}{" "}
+            <Link
+              className="text-emphasis hover:underline"
+              key="terms"
+              href={`${WEBSITE_TERMS_URL}`}
+              target="_blank">
+              {t("terms")}
+            </Link>{" "}
+            {t("and")}{" "}
+            <Link
+              className="text-emphasis hover:underline"
+              key="privacy"
+              href={`${WEBSITE_PRIVACY_POLICY_URL}`}
+              target="_blank">
+              {t("privacy_policy")}
+            </Link>
+            .
+          </div>
+        )}
         <div className="modalsticky mt-auto flex justify-end space-x-2 rtl:space-x-reverse">
           {isInstantMeeting ? (
             <Button type="submit" color="primary" loading={loadingStates.creatingInstantBooking}>
@@ -189,6 +242,7 @@ export const BookEventForm = ({
                   {t("back")}
                 </Button>
               )}
+
               <Button
                 type="submit"
                 color="primary"

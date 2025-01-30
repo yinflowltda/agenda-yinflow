@@ -2,38 +2,51 @@ import { PrismaReadService } from "@/modules/prisma/prisma-read.service";
 import { PrismaWriteService } from "@/modules/prisma/prisma-write.service";
 import { Injectable } from "@nestjs/common";
 
+// It ensures that we work on userLevel calendars only
+const ensureUserLevelWhere = {
+  eventTypeId: null,
+};
+
 @Injectable()
 export class SelectedCalendarsRepository {
   constructor(private readonly dbRead: PrismaReadService, private readonly dbWrite: PrismaWriteService) {}
 
-  upsertSelectedCalendar(externalId: string, credentialId: number, userId: number, integration: string) {
-    return this.dbWrite.prisma.selectedCalendar.upsert({
-      create: {
-        userId,
-        externalId,
-        credentialId,
-        integration,
-      },
-      update: {
-        userId,
-        externalId,
-        credentialId,
-        integration,
-      },
-      where: {
-        userId_integration_externalId: {
-          userId,
-          integration,
-          externalId,
+  async upsertSelectedCalendar(
+    externalId: string,
+    credentialId: number,
+    userId: number,
+    integration: string
+  ) {
+    // Why we can't use .upsert here, see server/repository/selectedCalendar.ts#upsert
+    const existingUserSelectedCalendar = await this.getUserSelectedCalendar(userId, integration, externalId);
+    const data = {
+      userId,
+      externalId,
+      credentialId,
+      integration,
+      ...ensureUserLevelWhere,
+    };
+
+    if (existingUserSelectedCalendar) {
+      return this.dbWrite.prisma.selectedCalendar.update({
+        where: {
+          id: existingUserSelectedCalendar.id,
         },
-      },
+        data,
+      });
+    }
+
+    return this.dbWrite.prisma.selectedCalendar.create({
+      data,
     });
   }
 
   getUserSelectedCalendars(userId: number) {
+    // It would be unique result but we can't use .findUnique here because of eventTypeId being nullable
     return this.dbRead.prisma.selectedCalendar.findMany({
       where: {
         userId,
+        ...ensureUserLevelWhere,
       },
     });
   }

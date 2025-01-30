@@ -3,11 +3,11 @@ import type { Prisma } from "@prisma/client";
 import type { DeepMockProxy } from "vitest-mock-extended";
 
 import { sendSlugReplacementEmail } from "@calcom/emails/email-manager";
-import { generateHashedLink } from "@calcom/lib/generateHashedLink";
 import { getTranslation } from "@calcom/lib/server/i18n";
 import type { PrismaClient } from "@calcom/prisma";
 import { SchedulingType } from "@calcom/prisma/enums";
 import { _EventTypeModel } from "@calcom/prisma/zod";
+import { eventTypeMetaDataSchemaWithTypedApps } from "@calcom/prisma/zod-utils";
 import { allManagedEventTypeProps, unlockedManagedEventTypeProps } from "@calcom/prisma/zod-utils";
 
 interface handleChildrenEventTypesProps {
@@ -23,8 +23,6 @@ interface handleChildrenEventTypesProps {
     team: { name: string } | null;
     workflows?: { workflowId: number }[];
   } | null;
-  hashedLink: string | undefined;
-  connectedLink: { id: number } | null;
   children:
     | {
         hidden: boolean;
@@ -92,8 +90,6 @@ export default async function handleChildrenEventTypes({
   eventTypeId: parentId,
   oldEventType,
   updatedEventType,
-  hashedLink,
-  connectedLink,
   children,
   prisma,
   profileId,
@@ -146,17 +142,6 @@ export default async function handleChildrenEventTypes({
   // Calculate if there are new workflows for which assigned members will get too
   const currentWorkflowIds = eventType.workflows?.map((wf) => wf.workflowId);
 
-  // Define hashedLink query input
-  const hashedLinkQuery = (userId: number) => {
-    return hashedLink
-      ? !connectedLink
-        ? { create: { link: generateHashedLink(userId) } }
-        : undefined
-      : connectedLink
-      ? { delete: true }
-      : undefined;
-  };
-
   // Store result for existent event types deletion process
   let deletedExistentEventTypes = undefined;
 
@@ -182,16 +167,12 @@ export default async function handleChildrenEventTypes({
               ((managedEventTypeValues as any).bookingLimits as unknown as Prisma.InputJsonObject) ??
               undefined,
             recurringEvent:
-              ((managedEventTypeValues as any).recurringEvent as unknown as Prisma.InputJsonValue) ??
-              undefined,
-            metadata: ((managedEventTypeValues as any).metadata as Prisma.InputJsonValue) ?? undefined,
-            bookingFields:
-              ((managedEventTypeValues as any).bookingFields as Prisma.InputJsonValue) ?? undefined,
-            durationLimits:
-              ((managedEventTypeValues as any).durationLimits as Prisma.InputJsonValue) ?? undefined,
-            eventTypeColor:
-              ((managedEventTypeValues as any).eventTypeColor as Prisma.InputJsonValue) ?? undefined,
-            onlyShowFirstAvailableSlot: (managedEventTypeValues as any).onlyShowFirstAvailableSlot ?? false,
+              (managedEventTypeValues.recurringEvent as unknown as Prisma.InputJsonValue) ?? undefined,
+            metadata: (managedEventTypeValues.metadata as Prisma.InputJsonValue) ?? undefined,
+            bookingFields: (managedEventTypeValues.bookingFields as Prisma.InputJsonValue) ?? undefined,
+            durationLimits: (managedEventTypeValues.durationLimits as Prisma.InputJsonValue) ?? undefined,
+            eventTypeColor: (managedEventTypeValues.eventTypeColor as Prisma.InputJsonValue) ?? undefined,
+            onlyShowFirstAvailableSlot: managedEventTypeValues.onlyShowFirstAvailableSlot ?? false,
             userId,
             users: {
               connect: [{ id: userId }],
@@ -201,14 +182,12 @@ export default async function handleChildrenEventTypes({
             workflows: currentWorkflowIds && {
               create: currentWorkflowIds.map((wfId) => ({ workflowId: wfId })),
             },
-            // Reserved for future releases
-            /*
-            webhooks: eventType.webhooks && {
-              createMany: {
-                data: eventType.webhooks?.map((wh) => ({ ...wh, eventTypeId: undefined })),
-              },
-            },*/
-            hashedLink: hashedLinkQuery(userId),
+            /**
+             * RR Segment isn't applicable for managed event types.
+             */
+            rrSegmentQueryValue: undefined,
+            assignRRMembersUsingSegment: false,
+            useEventLevelSelectedCalendars: false,
           },
         });
       })
@@ -247,11 +226,24 @@ export default async function handleChildrenEventTypes({
     const updatePayloadFiltered = Object.entries(updatePayload)
       .filter(([key, _]) => key !== "children")
       .reduce((newObj, [key, value]) => ({ ...newObj, [key]: value }), {});
-    console.log({ unlockedFieldProps });
     // Update event types for old users
-    const oldEventTypes = await prisma.$transaction(
-      oldUserIds.map((userId) => {
-        return prisma.eventType.update({
+    const oldEventTypes = await Promise.all(
+      oldUserIds.map(async (userId) => {
+        const existingEventType = await prisma.eventType.findUnique({
+          where: {
+            userId_parentId: {
+              userId,
+              parentId,
+            },
+          },
+          select: {
+            metadata: true,
+          },
+        });
+
+        const metadata = eventTypeMetaDataSchemaWithTypedApps.parse(existingEventType?.metadata || {});
+
+        return await prisma.eventType.update({
           where: {
             userId_parentId: {
               userId,
@@ -260,7 +252,20 @@ export default async function handleChildrenEventTypes({
           },
           data: {
             ...updatePayloadFiltered,
-            hashedLink: "hashedLink" in unlockedFieldProps ? undefined : hashedLinkQuery(userId),
+            hidden: children?.find((ch) => ch.owner.id === userId)?.hidden ?? false,
+            hashedLink:
+              "multiplePrivateLinks" in unlockedFieldProps
+                ? undefined
+                : {
+                    deleteMany: {},
+                  },
+            metadata: {
+              ...(eventType.metadata as Prisma.JsonObject),
+              ...(metadata?.multipleDuration && "length" in unlockedFieldProps
+                ? { multipleDuration: metadata.multipleDuration }
+                : {}),
+              ...(metadata?.apps && "apps" in unlockedFieldProps ? { apps: metadata.apps } : {}),
+            },
           },
         });
       })
@@ -287,23 +292,6 @@ export default async function handleChildrenEventTypes({
         })
       );
     }
-
-    // Reserved for future releases
-    /**
-    const updatedOldWebhooks = await prisma.webhook.updateMany({
-      where: {
-        userId: {
-          in: oldUserIds,
-        },
-      },
-      data: {
-        ...eventType.webhooks,
-      },
-    });
-    console.log(
-      "handleChildrenEventTypes:updatedOldWebhooks",
-      JSON.stringify({ updatedOldWebhooks }, null, 2)
-    );*/
   }
 
   // Old users deleted

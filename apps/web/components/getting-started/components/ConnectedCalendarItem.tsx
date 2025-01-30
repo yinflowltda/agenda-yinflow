@@ -1,4 +1,4 @@
-import { CalendarSwitch } from "@calcom/features/calendars/CalendarSwitch";
+import { UserCalendarSwitch } from "@calcom/features/calendars/CalendarSwitch";
 
 interface IConnectedCalendarItem {
   name: string;
@@ -35,7 +35,7 @@ const ConnectedCalendarItem = (prop: IConnectedCalendarItem) => {
           <div className="fle-row flex">
             <span
               title={externalId}
-              className="max-w-44 text-subtle mt-1 overflow-hidden text-ellipsis whitespace-nowrap font-sans text-sm">
+              className="text-subtle mt-1 max-w-44 overflow-hidden text-ellipsis whitespace-nowrap font-sans text-sm">
               {externalId}{" "}
             </span>
           </div>
@@ -52,7 +52,7 @@ const ConnectedCalendarItem = (prop: IConnectedCalendarItem) => {
       <div>
         <ul className="p-4">
           {calendars?.map((calendar, i) => (
-            <CalendarSwitch
+            <UserCalendarSwitch
               credentialId={calendar.credentialId}
               key={calendar.externalId}
               externalId={calendar.externalId}

@@ -6,7 +6,7 @@ import { createEvent } from "ics";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import { RRule } from "rrule";
 import { z } from "zod";
@@ -19,7 +19,6 @@ import type { nameObjectSchema } from "@calcom/core/event";
 import { getEventName } from "@calcom/core/event";
 import type { ConfigType } from "@calcom/dayjs";
 import dayjs from "@calcom/dayjs";
-import { getOrgFullOrigin } from "@calcom/ee/organizations/lib/orgDomains";
 import {
   useEmbedNonStylesConfig,
   useIsBackgroundTransparent,
@@ -32,6 +31,7 @@ import {
   TITLE_FIELD,
 } from "@calcom/features/bookings/lib/SystemField";
 import { cpfMask } from "@calcom/features/form-builder/utils";
+import { CURRENT_TIMEZONE } from "@calcom/lib/constants";
 import {
   formatToLocalizedDate,
   formatToLocalizedTime,
@@ -42,11 +42,12 @@ import { useCompatSearchParams } from "@calcom/lib/hooks/useCompatSearchParams";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { useRouterQuery } from "@calcom/lib/hooks/useRouterQuery";
 import useTheme from "@calcom/lib/hooks/useTheme";
+import isSmsCalEmail from "@calcom/lib/isSmsCalEmail";
 import { getEveryFreqFor } from "@calcom/lib/recurringStrings";
 import { getIs24hClockFromLocalStorage, isBrowserLocale24h } from "@calcom/lib/timeFormat";
 import { localStorage } from "@calcom/lib/webstorage";
 import { BookingStatus, SchedulingType } from "@calcom/prisma/enums";
-import { bookingMetadataSchema } from "@calcom/prisma/zod-utils";
+import { bookingMetadataSchema, eventTypeMetaDataSchemaWithTypedApps } from "@calcom/prisma/zod-utils";
 import { trpc } from "@calcom/trpc/react";
 import {
   Alert,
@@ -54,13 +55,11 @@ import {
   Badge,
   Button,
   EmptyScreen,
-  HeadSeo,
   Icon,
   TextArea,
   showToast,
   useCalcomTheme,
 } from "@calcom/ui";
-import PageWrapper from "@calcom/web/components/PageWrapper";
 import CancelBooking from "@calcom/web/components/booking/CancelBooking";
 import RejectBooking from "@calcom/web/components/booking/RejectBooking";
 import EventReservationSchema from "@calcom/web/components/schemas/EventReservationSchema";
@@ -198,7 +197,6 @@ export default function Success(props: PageProps) {
   ) {
     rescheduleLocation = bookingInfo.responses.location.optionValue;
   }
-
   const locationVideoCallUrl: string | undefined = bookingMetadataSchema.parse(
     bookingInfo?.metadata || {}
   )?.videoCallUrl;
@@ -209,12 +207,13 @@ export default function Success(props: PageProps) {
 
   const attendees = bookingInfo?.attendees;
 
-  const isGmail = !!attendees.find((attendee) => attendee.email.includes("gmail.com"));
+  const isGmail = !!attendees.find((attendee) => attendee?.email?.includes("gmail.com"));
 
   const [is24h, setIs24h] = useState(
     props?.userTimeFormat ? props.userTimeFormat === 24 : isBrowserLocale24h()
   );
   const { data: session } = useSession();
+  const isHost = props.isLoggedInUserHost;
 
   const [date, setDate] = useState(dayjs.utc(bookingInfo.startTime));
 
@@ -227,6 +226,7 @@ export default function Success(props: PageProps) {
   const parsedRating = rating ? parseInt(rating, 10) : 3;
   const currentUserEmail =
     searchParams?.get("cancelledBy") ?? searchParams?.get("email") ?? session?.user?.email ?? undefined;
+  searchParams?.get("rescheduledBy") ?? searchParams?.get("cancelledBy") ?? session?.user?.email ?? undefined;
 
   const defaultRating = isNaN(parsedRating) ? 3 : parsedRating > 5 ? 5 : parsedRating < 1 ? 1 : parsedRating;
   const [rateValue, setRateValue] = useState<number>(defaultRating);
@@ -264,12 +264,6 @@ export default function Success(props: PageProps) {
 
   function setIsRejectionMode() {
     const _searchParams = new URLSearchParams(searchParams ?? undefined);
-
-    if (_searchParams.get("reject")) {
-      _searchParams.delete("reject");
-    }
-
-    router.replace(`${pathname}?${_searchParams.toString()}`);
   }
 
   let evtName = eventType.eventName;
@@ -287,7 +281,13 @@ export default function Success(props: PageProps) {
     t,
   };
 
-  const giphyAppData = getEventTypeAppData(eventType, "giphy");
+  const giphyAppData = getEventTypeAppData(
+    {
+      ...eventType,
+      metadata: eventTypeMetaDataSchemaWithTypedApps.parse(eventType.metadata),
+    },
+    "giphy"
+  );
   const giphyImage = giphyAppData?.thankYouPage;
   const isRoundRobin = eventType.schedulingType === SchedulingType.ROUND_ROBIN;
 
@@ -314,9 +314,7 @@ export default function Success(props: PageProps) {
   }, [telemetry]); */
 
   useEffect(() => {
-    setDate(
-      date.tz(localStorage.getItem("timeOption.preferredTimeZone") || dayjs.tz.guess() || "Europe/London")
-    );
+    setDate(date.tz(localStorage.getItem("timeOption.preferredTimeZone") || CURRENT_TIMEZONE));
     setIs24h(props?.userTimeFormat ? props.userTimeFormat === 24 : !!getIs24hClockFromLocalStorage());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventType, needsConfirmation]);
@@ -421,8 +419,22 @@ export default function Success(props: PageProps) {
       return t(`needs_to_be_confirmed_or_rejected${titleSuffix}`);
     }
     if (bookingInfo.user) {
-      return t(`${titlePrefix}emailed_you_and_attendees${titleSuffix}`, {
-        user: bookingInfo.user.name || bookingInfo.user.email,
+      const isAttendee = bookingInfo.attendees.find((attendee) => attendee.email === session?.user?.email);
+      const attendee = bookingInfo.attendees[0]?.name || bookingInfo.attendees[0]?.email || "Nameless";
+      const host = bookingInfo.user.name || bookingInfo.user.email;
+      if (isHost) {
+        return t(`${titlePrefix}emailed_you_and_attendees${titleSuffix}`, {
+          user: attendee,
+        });
+      }
+      if (isAttendee) {
+        return t(`${titlePrefix}emailed_you_and_attendees${titleSuffix}`, {
+          user: host,
+        });
+      }
+      return t(`${titlePrefix}emailed_host_and_attendee${titleSuffix}`, {
+        host,
+        attendee,
       });
     }
     return t(`emailed_you_and_attendees${titleSuffix}`);
@@ -435,10 +447,6 @@ export default function Success(props: PageProps) {
     brandColor: props.profile.brandColor,
     darkBrandColor: props.profile.darkBrandColor,
   });
-  const title = t(
-    `booking_${needsConfirmation ? "submitted" : "confirmed"}${props.recurringBookings ? "_recurring" : ""}`
-  );
-
   const locationToDisplay = getSuccessPageLocationMessage(
     locationVideoCallUrl ? locationVideoCallUrl : location,
     t,
@@ -614,14 +622,24 @@ export default function Success(props: PageProps) {
     purchaseDate,
     seatReferenceUid,
   ]);
+  const isRerouting = searchParams?.get("cal.rerouting") === "true";
+  const isRescheduled = bookingInfo?.rescheduled;
 
   const successPageHeadline = (() => {
     if (needsConfirmationAndReschedulable) {
       return isRecurringBooking ? t("booking_submitted_recurring") : t("booking_submitted");
     }
 
+    if (isRerouting) {
+      return t("This meeting has been rerouted");
+    }
+
     if (isNotAttendingSeatedEvent) {
       return t("no_longer_attending");
+    }
+
+    if (isRescheduled) {
+      return t("your_event_has_been_rescheduled");
     }
 
     if (isEventCancelled) {
@@ -669,8 +687,9 @@ export default function Success(props: PageProps) {
           </Link>
         </div>
       )}
-      <HeadSeo origin={getOrgFullOrigin(orgSlug)} title={title} description={title} />
-      <BookingPageTagManager eventType={eventType} />
+      <BookingPageTagManager
+        eventType={{ ...eventType, metadata: eventTypeMetaDataSchemaWithTypedApps.parse(eventType.metadata) }}
+      />
       <main className={classNames(shouldAlignCentrally ? "mx-auto" : "", isEmbed ? "" : "max-w-3xl")}>
         <div className={classNames("overflow-y-auto", isEmbed ? "" : "z-50 ")}>
           <div
@@ -734,6 +753,7 @@ export default function Success(props: PageProps) {
                         id="modal-headline">
                         {successPageHeadline}
                       </h3>
+
                       <div className="mt-3">
                         <p className="text-default">{getTitle()}</p>
                       </div>
@@ -813,7 +833,14 @@ export default function Success(props: PageProps) {
                                   {attendee.name && (
                                     <p data-testid={`attendee-name-${attendee.name}`}>{attendee.name}</p>
                                   )}
-                                  <p data-testid={`attendee-email-${attendee.email}`}>{attendee.email}</p>
+                                  {attendee.phoneNumber && (
+                                    <p data-testid={`attendee-phone-${attendee.phoneNumber}`}>
+                                      {attendee.phoneNumber}
+                                    </p>
+                                  )}
+                                  {!isSmsCalEmail(attendee.email) && (
+                                    <p data-testid={`attendee-email-${attendee.email}`}>{attendee.email}</p>
+                                  )}
                                 </div>
                               ))}
                             </div>
@@ -881,7 +908,7 @@ export default function Success(props: PageProps) {
                           // We show Booker Name, Emails and guests in Who section
                           // We show notes in additional notes section
                           // We show rescheduleReason at the top
-                          if (!field) return null;
+
                           const isSystemField = SystemField.safeParse(field.name);
                           // SMS_REMINDER_NUMBER_FIELD is a system field but doesn't have a dedicated place in the UI. So, it would be shown through the following responses list
                           // TITLE is also an identifier for booking question "What is this meeting about?"
@@ -892,7 +919,7 @@ export default function Success(props: PageProps) {
                           )
                             return null;
 
-                          const label = field.label || t(field.defaultLabel || "");
+                          const label = field.label || t(field.defaultLabel);
 
                           const maskedCPF =
                             field.name === "CPF"
@@ -1350,7 +1377,6 @@ const DisplayLocation = ({
   );
 
 Success.isBookingPage = true;
-Success.PageWrapper = PageWrapper;
 
 type RecurringBookingsProps = {
   eventType: PageProps["eventType"];
