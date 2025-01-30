@@ -52,13 +52,12 @@ export class SelectedCalendarsRepository {
   }
 
   getUserSelectedCalendar(userId: number, integration: string, externalId: string) {
-    return this.dbRead.prisma.selectedCalendar.findUnique({
+    return this.dbRead.prisma.selectedCalendar.findFirst({
       where: {
-        userId_integration_externalId: {
-          userId,
-          externalId,
-          integration,
-        },
+        userId,
+        externalId,
+        integration,
+        ...ensureUserLevelWhere,
       },
     });
   }
@@ -69,33 +68,46 @@ export class SelectedCalendarsRepository {
     externalId: string,
     credentialId: number
   ) {
-    return await this.dbWrite.prisma.selectedCalendar.upsert({
-      where: {
-        userId_integration_externalId: {
-          userId,
-          integration,
-          externalId,
-        },
-      },
-      create: {
+    const existingUserSelectedCalendar = await this.getUserSelectedCalendar(userId, integration, externalId);
+
+    if (existingUserSelectedCalendar) {
+      return;
+    }
+
+    return await this.dbWrite.prisma.selectedCalendar.create({
+      data: {
         userId,
         integration,
         externalId,
         credentialId,
+        ...ensureUserLevelWhere,
       },
-      // already exists
-      update: {},
     });
   }
 
   async removeUserSelectedCalendar(userId: number, integration: string, externalId: string) {
+    // Using deleteMany because userId_externalId_integration_eventTypeId is a unique constraint but with eventTypeId being nullable, causing it to be not used as a unique constraint
+    const records = await this.dbWrite.prisma.selectedCalendar.findMany({
+      where: {
+        userId,
+        externalId,
+        integration,
+        ...ensureUserLevelWhere,
+      },
+    });
+
+    // Make the behaviour same as .delete which throws error if no record is found
+    if (records.length === 0) {
+      throw new Error("No SelectedCalendar found.");
+    }
+
+    if (records.length > 1) {
+      throw new Error("Multiple SelecteCalendars found. Skipping deletion");
+    }
+
     return await this.dbWrite.prisma.selectedCalendar.delete({
       where: {
-        userId_integration_externalId: {
-          userId,
-          externalId,
-          integration,
-        },
+        id: records[0].id,
       },
     });
   }
