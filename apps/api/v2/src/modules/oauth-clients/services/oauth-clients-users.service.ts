@@ -62,11 +62,10 @@ export class OAuthClientUsersService {
       )[0];
       await this.userRepository.addToOAuthClient(user.id, oAuthClientId);
       const updatedUser = await this.userRepository.update(user.id, {
-        name: body.name,
+        name: body.name ?? user.username ?? undefined,
         locale: body.locale,
       });
       user.locale = updatedUser.locale;
-      user.name = updatedUser.name;
     }
 
     const { accessToken, refreshToken, accessTokenExpiresAt } = await this.tokensRepository.createOAuthTokens(

@@ -45,13 +45,12 @@ import { Team } from "@calcom/prisma/client";
   version: API_VERSIONS_VALUES,
 })
 @UseGuards(ApiAuthGuard, IsOrgGuard, RolesGuard, PlatformPlanGuard, IsAdminAPIEnabledGuard)
-@DocsTags("Orgs / Teams")
+@DocsTags("Organizations Teams")
 export class OrganizationsTeamsController {
   constructor(private organizationsTeamsService: OrganizationsTeamsService) {}
 
   @Get()
-  @DocsTags("Teams")
-  @ApiOperation({ summary: "Get all teams" })
+  @ApiOperation({ summary: "Get all the teams of an organization." })
   @Roles("ORG_ADMIN")
   @PlatformPlan("ESSENTIALS")
   async getAllTeams(
@@ -67,7 +66,7 @@ export class OrganizationsTeamsController {
   }
 
   @Get("/me")
-  @ApiOperation({ summary: "Get team membership for user" })
+  @ApiOperation({ summary: "Get the organization's teams user is a member of" })
   @Roles("ORG_MEMBER")
   @PlatformPlan("ESSENTIALS")
   async getMyTeams(
@@ -98,7 +97,7 @@ export class OrganizationsTeamsController {
   @Roles("TEAM_ADMIN")
   @PlatformPlan("ESSENTIALS")
   @Get("/:teamId")
-  @ApiOperation({ summary: "Get a team" })
+  @ApiOperation({ summary: "Get a team of the organization by ID." })
   async getTeam(@GetTeam() team: Team): Promise<OrgTeamOutputResponseDto> {
     return {
       status: SUCCESS_STATUS,
@@ -110,7 +109,7 @@ export class OrganizationsTeamsController {
   @Roles("ORG_ADMIN")
   @PlatformPlan("ESSENTIALS")
   @Delete("/:teamId")
-  @ApiOperation({ summary: "Delete a team" })
+  @ApiOperation({ summary: "Delete a team of the organization by ID." })
   async deleteTeam(
     @Param("orgId", ParseIntPipe) orgId: number,
     @Param("teamId", ParseIntPipe) teamId: number
@@ -126,7 +125,7 @@ export class OrganizationsTeamsController {
   @Roles("ORG_ADMIN")
   @PlatformPlan("ESSENTIALS")
   @Patch("/:teamId")
-  @ApiOperation({ summary: "Update a team" })
+  @ApiOperation({ summary: "Update a team of the organization by ID." })
   async updateTeam(
     @Param("orgId", ParseIntPipe) orgId: number,
     @Param("teamId", ParseIntPipe) teamId: number,
@@ -142,7 +141,7 @@ export class OrganizationsTeamsController {
   @Post()
   @Roles("ORG_ADMIN")
   @PlatformPlan("ESSENTIALS")
-  @ApiOperation({ summary: "Create a team" })
+  @ApiOperation({ summary: "Create a team for an organization." })
   async createTeam(
     @Param("orgId", ParseIntPipe) orgId: number,
     @Body() body: CreateOrgTeamDto,

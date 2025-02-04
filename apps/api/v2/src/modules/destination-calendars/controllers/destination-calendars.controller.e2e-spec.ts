@@ -98,7 +98,6 @@ describe("Platform Destination Calendar Endpoints", () => {
             error: { message: "" },
           },
         ],
-        destinationCalendar: null,
       })
     );
     app = moduleRef.createNestApplication();

@@ -198,7 +198,7 @@ class DestinationCalendar {
   integrationTitle?: string;
 }
 
-export class ConnectedCalendarsData {
+class ConnectedCalendarsData {
   @ValidateNested({ each: true })
   @IsArray()
   connectedCalendars!: ConnectedCalendar[];
