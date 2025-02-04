@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from "react";
 
-import type { ptBrTranslationKeys, CalProviderLanguagesType } from "../cal-provider/CalProvider";
+import type { translationKeys, CalProviderLanguagesType } from "../cal-provider/CalProvider";
 import type http from "../lib/http";
 
 export interface IAtomsContextOptions {
@@ -26,7 +26,7 @@ export interface IAtomsContext {
     language: CalProviderLanguagesType;
     defaultLocale: CalProviderLanguagesType;
     locales: CalProviderLanguagesType[];
-    exists: (key: ptBrTranslationKeys | string) => boolean;
+    exists: (key: translationKeys | string) => boolean;
   };
   organizationId: number;
 }

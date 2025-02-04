@@ -1,3 +1,4 @@
+/* eslint-disable react/display-name */
 import type { LayoutProps, PageProps } from "app/_types";
 import { type GetServerSidePropsContext } from "next";
 import { cookies, headers } from "next/headers";
@@ -36,7 +37,7 @@ export function WithLayout<T extends Record<string, any>>({
         requiresLicense={false}
         nonce={nonce}
         themeBasis={null}
-        isBookingPage={isBookingPage}
+        isBookingPage={isBookingPage || !!(Page && "isBookingPage" in Page && Page.isBookingPage)}
         {...props}>
         {Page ? <Page {...props} /> : children}
       </PageWrapper>

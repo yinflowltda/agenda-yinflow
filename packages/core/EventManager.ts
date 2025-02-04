@@ -32,9 +32,9 @@ import type {
   PartialReference,
 } from "@calcom/types/EventManager";
 
-import { createEvent, deleteEvent, updateEvent } from "./CalendarManager";
+import { createEvent, updateEvent, deleteEvent } from "./CalendarManager";
 import CrmManager from "./crmManager/crmManager";
-import { createMeeting, deleteMeeting, updateMeeting } from "./videoClient";
+import { createMeeting, updateMeeting, deleteMeeting } from "./videoClient";
 
 const log = logger.getSubLogger({ prefix: ["EventManager"] });
 export const isDedicatedIntegration = (location: string): boolean => {
@@ -54,6 +54,17 @@ interface AppOptions {
 const latestCredentialFirst = <T extends HasId>(a: T, b: T) => {
   return b.id - a.id;
 };
+
+interface HasId {
+  id: number;
+}
+
+// The options should have the slug of the apps the option is enabled for
+interface AppOptions {
+  crm: {
+    skipContactCreation: string[];
+  };
+}
 
 export const getLocationRequestFromIntegration = (location: string) => {
   const eventLocationType = getEventLocationTypeFromApp(location);
@@ -185,9 +196,12 @@ export default class EventManager {
         result.type = result.createdEvent.type;
         //responses data is later sent to webhook
         if (evt.location && evt.responses) {
-          evt.responses["location"].value = {
-            optionValue: "",
-            value: evt.location,
+          evt.responses["location"] = {
+            ...(evt.responses["location"] ?? {}),
+            value: {
+              optionValue: "",
+              value: evt.location,
+            },
           };
         }
       }
@@ -255,9 +269,12 @@ export default class EventManager {
         result.type = result.createdEvent.type;
         //responses data is later sent to webhook
         if (evt.location && evt.responses) {
-          evt.responses["location"].value = {
-            optionValue: "",
-            value: evt.location,
+          evt.responses["location"] = {
+            ...(evt.responses["location"] ?? {}),
+            value: {
+              optionValue: "",
+              value: evt.location,
+            },
           };
         }
       }

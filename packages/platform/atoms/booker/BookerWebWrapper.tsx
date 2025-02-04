@@ -132,14 +132,14 @@ export const BookerWebWrapper = (props: BookerWebWrapperAtomProps) => {
     month: props.month,
     duration: props.duration,
     selectedDate,
-    bookerEmail: debouncedFormEmail,
+    teamMemberEmail: props.teamMemberEmail,
   });
   const bookings = useBookings({
     event,
     hashedLink: props.hashedLink,
     bookingForm: bookerForm.bookingForm,
     metadata: metadata ?? {},
-    teamMemberEmail: schedule.data?.teamMember,
+    teamMemberEmail: props.teamMemberEmail,
   });
 
   const verifyCode = useVerifyCode({

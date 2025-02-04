@@ -18,12 +18,7 @@ export const DatePicker = ({
   scrollToTimeSlots,
 }: {
   event: {
-    data?: {
-      users: Pick<User, "weekStart">[];
-      recurringEvent: {
-        freq: number;
-      };
-    } | null;
+    data?: { users: Pick<User, "weekStart">[] } | null;
   };
   schedule: useScheduleForEventReturnType;
   classNames?: {

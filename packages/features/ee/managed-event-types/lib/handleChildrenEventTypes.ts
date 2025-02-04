@@ -182,16 +182,12 @@ export default async function handleChildrenEventTypes({
               ((managedEventTypeValues as any).bookingLimits as unknown as Prisma.InputJsonObject) ??
               undefined,
             recurringEvent:
-              ((managedEventTypeValues as any).recurringEvent as unknown as Prisma.InputJsonValue) ??
-              undefined,
-            metadata: ((managedEventTypeValues as any).metadata as Prisma.InputJsonValue) ?? undefined,
-            bookingFields:
-              ((managedEventTypeValues as any).bookingFields as Prisma.InputJsonValue) ?? undefined,
-            durationLimits:
-              ((managedEventTypeValues as any).durationLimits as Prisma.InputJsonValue) ?? undefined,
-            eventTypeColor:
-              ((managedEventTypeValues as any).eventTypeColor as Prisma.InputJsonValue) ?? undefined,
-            onlyShowFirstAvailableSlot: (managedEventTypeValues as any).onlyShowFirstAvailableSlot ?? false,
+              (managedEventTypeValues.recurringEvent as unknown as Prisma.InputJsonValue) ?? undefined,
+            metadata: (managedEventTypeValues.metadata as Prisma.InputJsonValue) ?? undefined,
+            bookingFields: (managedEventTypeValues.bookingFields as Prisma.InputJsonValue) ?? undefined,
+            durationLimits: (managedEventTypeValues.durationLimits as Prisma.InputJsonValue) ?? undefined,
+            eventTypeColor: (managedEventTypeValues.eventTypeColor as Prisma.InputJsonValue) ?? undefined,
+            onlyShowFirstAvailableSlot: managedEventTypeValues.onlyShowFirstAvailableSlot ?? false,
             userId,
             users: {
               connect: [{ id: userId }],

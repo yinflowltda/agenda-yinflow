@@ -20,7 +20,7 @@ type AvailableTimeSlotsProps = {
   seatsPerTimeSlot?: number | null;
   showAvailableSeatsCount?: boolean | null;
   event: {
-    data?: Pick<BookerEvent, "length" | "id"> | null;
+    data?: Pick<BookerEvent, "length"> | null;
   };
   customClassNames?: {
     availableTimeSlotsContainer?: string;
