@@ -89,7 +89,7 @@ export default function InviteLinkSettingsModal(props: InvitationLinkSettingsMod
                   options={expiresInDaysOption}
                   defaultValue={expiresInDaysOption.find((option) => option.value === props.expiresInDays)}
                   className="w-full"
-                  onChange={(val) => onChange(val?.value)}
+                  onChange={(val: any) => onChange(val?.value)}
                 />
               </div>
             )}

@@ -437,15 +437,12 @@ export async function updateNewTeamMemberEventTypes(userId: number, teamId: numb
             data: {
               ...managedEventTypeValues,
               ...unlockedEventTypeValues,
-              bookingLimits:
-                ((managedEventTypeValues as any).bookingLimits as unknown as Prisma.InputJsonObject) ??
-                undefined,
-              recurringEvent:
-                (managedEventTypeValues.recurringEvent as unknown as Prisma.InputJsonValue) ?? undefined,
-              metadata: (managedEventTypeValues.metadata as Prisma.InputJsonValue) ?? undefined,
-              bookingFields: (managedEventTypeValues.bookingFields as Prisma.InputJsonValue) ?? undefined,
-              durationLimits: (managedEventTypeValues.durationLimits as Prisma.InputJsonValue) ?? undefined,
-              eventTypeColor: (managedEventTypeValues.eventTypeColor as Prisma.InputJsonValue) ?? undefined,
+              bookingLimits: ((managedEventTypeValues as any).bookingLimits as any) ?? undefined,
+              recurringEvent: (managedEventTypeValues.recurringEvent as any) ?? undefined,
+              metadata: (managedEventTypeValues.metadata as any) ?? undefined,
+              bookingFields: (managedEventTypeValues.bookingFields as any) ?? undefined,
+              durationLimits: (managedEventTypeValues.durationLimits as any) ?? undefined,
+              eventTypeColor: (managedEventTypeValues.eventTypeColor as any) ?? undefined,
               onlyShowFirstAvailableSlot: managedEventTypeValues.onlyShowFirstAvailableSlot ?? false,
               userId,
               users: {

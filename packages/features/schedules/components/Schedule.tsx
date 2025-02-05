@@ -408,7 +408,7 @@ const TimeRangeField = ({
         isDisabled={disabled}
         value={value.start}
         menuPlacement="bottom"
-        onChange={(option) => {
+        onChange={(option: any) => {
           const newStart = new Date(option?.value as number);
           if (newStart >= new Date(value.end)) {
             const newEnd = new Date(option?.value as number);
@@ -428,7 +428,7 @@ const TimeRangeField = ({
         value={value.end}
         min={value.start}
         menuPlacement="bottom"
-        onChange={(option) => {
+        onChange={(option: any) => {
           onChange({ ...value, end: new Date(option?.value as number) });
           handleSubmit && handleSubmit(getValues() as AvailabilityFormValues);
         }}
