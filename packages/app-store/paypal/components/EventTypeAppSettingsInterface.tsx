@@ -93,7 +93,7 @@ const EventTypeAppSettingsInterface: EventTypeAppSettingsComponent = ({
           onChange={(e: any) => {
             if (e) {
               setSelectedCurrency(e);
-              setCurrencySymbol(currencySymbols[e.value]);
+              setCurrencySymbol(currencySymbols[e.value as keyof typeof currencySymbols]);
               setAppData("currency", e.value);
             }
           }}

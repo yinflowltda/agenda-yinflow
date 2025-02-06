@@ -99,15 +99,15 @@ export const DestinationCalendarSelector = ({
         }
         options={options}
         styles={{
-          placeholder: (styles) => ({
+          placeholder: (styles: any) => ({
             ...styles,
             ...getPlaceholderContent(hidePlaceholder, `'${t("create_events_on")}:'`),
           }),
-          singleValue: (styles) => ({
+          singleValue: (styles: any) => ({
             ...styles,
             ...getPlaceholderContent(hidePlaceholder, `'${t("create_events_on")}:'`),
           }),
-          control: (defaultStyles) => {
+          control: (defaultStyles: any) => {
             return {
               ...defaultStyles,
               "@media only screen and (min-width: 640px)": {
@@ -121,7 +121,7 @@ export const DestinationCalendarSelector = ({
         className={classNames(
           "border-default my-2 block w-full min-w-0 flex-1 rounded-none rounded-r-sm text-sm"
         )}
-        onChange={(newValue) => {
+        onChange={(newValue: any) => {
           setSelectedOption(newValue);
           if (!newValue) {
             return;
