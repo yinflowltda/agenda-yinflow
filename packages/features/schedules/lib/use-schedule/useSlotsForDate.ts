@@ -33,8 +33,8 @@ export const useSlotsForAvailableDates = (
     return dates
       .filter((date) => date !== null)
       .filter((date) => dayjs(date).isBefore(nextWeekDay) || !isTherapy)
-      .map((date) => {
-        if (!isTherapy) return { slots: slots[date] || [], date };
+      .map((date: any) => {
+        if (!isTherapy) return { slots: slots[date as keyof typeof slots] || [], date };
 
         const nextWeekDay = dayjs(date).add(7, "day").format("YYYY-MM-DD");
         const nextFortnightlyDay = dayjs(date).add(15, "day").format("YYYY-MM-DD");
@@ -45,14 +45,14 @@ export const useSlotsForAvailableDates = (
 
         const filteredSlots =
           nextWeekSlots && nextFortnightlySlots
-            ? slots[date].filter(({ time }) => {
+            ? slots[date as keyof typeof slots].filter(({ time }: any) => {
                 const nextWeekSchedule = dayjs(time).add(7, "day").toISOString();
                 const nextFortnightlySchedule = dayjs(time).add(15, "day").toISOString();
                 return weekly
                   ? nextWeekSlots.includes(nextWeekSchedule)
                   : nextFortnightlySlots.includes(nextFortnightlySchedule);
               })
-            : slots[date];
+            : slots[date as keyof typeof slots];
 
         return { slots: filteredSlots || [], date };
       });

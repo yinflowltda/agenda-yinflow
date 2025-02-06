@@ -1,8 +1,6 @@
 import type { EventType } from "@prisma/client";
 import { useRouter } from "next/navigation";
 
-import type { PaymentPageProps } from "@calcom/ee/payments/pages/payment";
-import type { BookingResponse } from "@calcom/features/bookings/types";
 import { useCompatSearchParams } from "@calcom/lib/hooks/useCompatSearchParams";
 import { navigateInTopWindow } from "@calcom/lib/navigateInTopWindow";
 
@@ -21,10 +19,7 @@ function getNewSeachParams(args: {
   return newSearchParams;
 }
 
-type SuccessRedirectBookingType = Pick<
-  BookingResponse | PaymentPageProps["booking"],
-  "uid" | "title" | "description" | "startTime" | "endTime" | "location" | "responses"
->;
+type SuccessRedirectBookingType = any;
 
 export const getBookingRedirectExtraParams = (booking: SuccessRedirectBookingType) => {
   type BookingResponseKey = keyof SuccessRedirectBookingType;

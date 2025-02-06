@@ -296,7 +296,7 @@ export const useBookings = ({ event, hashedLink, bookingForm, metadata, teamMemb
       bookingSuccessRedirect({
         successRedirectUrl: event?.data?.successRedirectUrl || "",
         query,
-        booking,
+        booking: booking as any,
         forwardParamsSuccessRedirect:
           event?.data?.forwardParamsSuccessRedirect === undefined
             ? true

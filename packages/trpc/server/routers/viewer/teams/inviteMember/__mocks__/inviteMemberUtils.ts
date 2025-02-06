@@ -77,7 +77,7 @@ export const inviteMemberutilsScenarios = {
       }
     ) {
       inviteMemberUtilsMock.findUsersWithInviteStatus.mockImplementation(({ invitations, team }) => {
-        const allInvitationsExist = invitations.every((invitation) =>
+        const allInvitationsExist = invitations.every((invitation: any) =>
           forInput.invitations.find((i) => i.usernameOrEmail === invitation.usernameOrEmail)
         );
         if (forInput.team.id == team.id && allInvitationsExist) return Promise.resolve(returnVal);
@@ -111,7 +111,7 @@ export const expects = {
     teamId: number;
     isOrg: boolean;
   }) => {
-    emails.forEach((email, index) => {
+    emails.forEach((email: any, index) => {
       expect(inviteMemberUtilsMock.sendSignupToOrganizationEmail.mock.calls[index][0]).toEqual(
         expect.objectContaining({
           usernameOrEmail: email,

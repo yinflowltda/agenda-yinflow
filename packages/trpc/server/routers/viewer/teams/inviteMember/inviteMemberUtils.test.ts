@@ -6,7 +6,6 @@ import { MembershipRole } from "@calcom/prisma/enums";
 
 import { TRPCError } from "@trpc/server";
 
-import type { TeamWithParent } from "./types";
 import type { UserWithMembership } from "./utils";
 import { INVITE_STATUS } from "./utils";
 import {
@@ -66,7 +65,7 @@ const mockedReturnSuccessCheckPerms = {
   },
 };
 
-const mockedRegularTeam: TeamWithParent = {
+const mockedRegularTeam: any = {
   id: 1,
   name: "Team A",
   slug: null,
