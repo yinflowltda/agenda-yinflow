@@ -11,7 +11,5 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "setupFiles": ["<rootDir>/test/setEnvVars.ts"],
-  "reporters": ["default", "jest-summarizing-reporter"],
-  "workerIdleMemoryLimit": "512MB",
-  "maxWorkers": 2
+  "reporters": ["default", "jest-summarizing-reporter"]
 }

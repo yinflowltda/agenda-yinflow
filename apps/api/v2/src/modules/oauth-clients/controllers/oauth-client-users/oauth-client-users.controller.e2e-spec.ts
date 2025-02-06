@@ -4,9 +4,10 @@ import { DEFAULT_EVENT_TYPES } from "@/ee/event-types/event-types_2024_04_15/con
 import { HttpExceptionFilter } from "@/filters/http-exception.filter";
 import { PrismaExceptionFilter } from "@/filters/prisma-exception.filter";
 import { Locales } from "@/lib/enums/locales";
-import { CreateManagedUserOutput } from "@/modules/oauth-clients/controllers/oauth-client-users/outputs/create-managed-user.output";
-import { GetManagedUserOutput } from "@/modules/oauth-clients/controllers/oauth-client-users/outputs/get-managed-user.output";
-import { GetManagedUsersOutput } from "@/modules/oauth-clients/controllers/oauth-client-users/outputs/get-managed-users.output";
+import {
+  CreateUserResponse,
+  UserReturned,
+} from "@/modules/oauth-clients/controllers/oauth-client-users/oauth-client-users.controller";
 import { CreateManagedUserInput } from "@/modules/users/inputs/create-managed-user.input";
 import { UpdateManagedUserInput } from "@/modules/users/inputs/update-managed-user.input";
 import { UsersModule } from "@/modules/users/users.module";
@@ -80,7 +81,7 @@ describe("OAuth Client Users Endpoints", () => {
     let schedulesRepositoryFixture: SchedulesRepositoryFixture;
     let profilesRepositoryFixture: ProfileRepositoryFixture;
 
-    let postResponseData: CreateManagedUserOutput["data"];
+    let postResponseData: CreateUserResponse;
 
     const platformAdminEmail = "platform-sensei@mail.com";
     let platformAdmin: User;
@@ -149,22 +150,6 @@ describe("OAuth Client Users Endpoints", () => {
       const requestBody: CreateManagedUserInput = {
         email: userEmail,
         timeZone: "incorrect-time-zone",
-        name: "Alice Smith",
-      };
-
-      await request(app.getHttpServer())
-        .post(`/api/v2/oauth-clients/${oAuthClient.id}/users`)
-        .set("x-cal-secret-key", oAuthClient.secret)
-        .send(requestBody)
-        .expect(400);
-    });
-
-    it(`should fail /POST with incorrect timeFormat`, async () => {
-      const requestBody = {
-        email: userEmail,
-        timeZone: userTimeZone,
-        name: "Alice Smith",
-        timeFormat: 100,
       };
 
       await request(app.getHttpServer())
@@ -181,7 +166,6 @@ describe("OAuth Client Users Endpoints", () => {
         weekStart: "Monday",
         timeFormat: 24,
         locale: Locales.FR,
-        name: "Alice Smith",
       };
 
       const response = await request(app.getHttpServer())
@@ -190,7 +174,11 @@ describe("OAuth Client Users Endpoints", () => {
         .send(requestBody)
         .expect(201);
 
-      const responseBody: CreateManagedUserOutput = response.body;
+      const responseBody: ApiSuccessResponse<{
+        user: Omit<User, "password">;
+        accessToken: string;
+        refreshToken: string;
+      }> = response.body;
 
       postResponseData = responseBody.data;
 
@@ -198,7 +186,6 @@ describe("OAuth Client Users Endpoints", () => {
       expect(responseBody.data).toBeDefined();
       expect(responseBody.data.user.email).toEqual(getOAuthUserEmail(oAuthClient.id, requestBody.email));
       expect(responseBody.data.user.timeZone).toEqual(requestBody.timeZone);
-      expect(responseBody.data.user.name).toEqual(requestBody.name);
       expect(responseBody.data.user.weekStart).toEqual(requestBody.weekStart);
       expect(responseBody.data.user.timeFormat).toEqual(requestBody.timeFormat);
       expect(responseBody.data.user.locale).toEqual(requestBody.locale);
@@ -255,13 +242,12 @@ describe("OAuth Client Users Endpoints", () => {
         .set("Origin", `${CLIENT_REDIRECT_URI}`)
         .expect(200);
 
-      const responseBody: GetManagedUsersOutput = response.body;
+      const responseBody: ApiSuccessResponse<UserReturned[]> = response.body;
 
       expect(responseBody.status).toEqual(SUCCESS_STATUS);
       expect(responseBody.data).toBeDefined();
       expect(responseBody.data?.length).toBeGreaterThan(0);
       expect(responseBody.data[0].email).toEqual(postResponseData.user.email);
-      expect(responseBody.data[0].name).toEqual(postResponseData.user.name);
     });
 
     it(`/GET/:id`, async () => {
@@ -271,7 +257,7 @@ describe("OAuth Client Users Endpoints", () => {
         .set("Origin", `${CLIENT_REDIRECT_URI}`)
         .expect(200);
 
-      const responseBody: GetManagedUserOutput = response.body;
+      const responseBody: ApiSuccessResponse<UserReturned> = response.body;
 
       expect(responseBody.status).toEqual(SUCCESS_STATUS);
       expect(responseBody.data).toBeDefined();
@@ -347,7 +333,7 @@ describe("OAuth Client Users Endpoints", () => {
     let eventTypesRepositoryFixture: EventTypesRepositoryFixture;
     let profileRepositoryFixture: ProfileRepositoryFixture;
 
-    let postResponseData: CreateManagedUserOutput["data"];
+    let postResponseData: CreateUserResponse;
 
     const userEmail = "oauth-client-users-user@gmail.com";
     const userTimeZone = "Europe/Rome";
@@ -493,7 +479,6 @@ describe("OAuth Client Users Endpoints", () => {
         weekStart: "Monday",
         timeFormat: 24,
         locale: Locales.FR,
-        name: "Alice Smith",
       };
 
       const response = await request(app.getHttpServer())
@@ -502,7 +487,12 @@ describe("OAuth Client Users Endpoints", () => {
         .send(requestBody)
         .expect(201);
 
-      const responseBody: CreateManagedUserOutput = response.body;
+      const responseBody: ApiSuccessResponse<{
+        user: Omit<User, "password">;
+        accessToken: string;
+        refreshToken: string;
+      }> = response.body;
+
       postResponseData = responseBody.data;
 
       expect(responseBody.status).toEqual(SUCCESS_STATUS);
@@ -510,7 +500,6 @@ describe("OAuth Client Users Endpoints", () => {
 
       await userHasCorrectEventTypes(responseBody.data.user.id);
       await teamHasCorrectEventTypes(team1.id);
-      expect(responseBody.data.user.name).toEqual(requestBody.name);
     });
 
     async function userHasCorrectEventTypes(userId: number) {

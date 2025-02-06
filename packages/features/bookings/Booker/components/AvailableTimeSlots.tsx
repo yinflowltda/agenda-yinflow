@@ -20,7 +20,7 @@ type AvailableTimeSlotsProps = {
   seatsPerTimeSlot?: number | null;
   showAvailableSeatsCount?: boolean | null;
   event: {
-    data?: Pick<BookerEvent, "length" | "id"> | null;
+    data?: Pick<BookerEvent, "length"> | null;
   };
   customClassNames?: {
     availableTimeSlotsContainer?: string;
@@ -89,8 +89,13 @@ export const AvailableTimeSlots = ({
 
   const therapyIds = [1375, 1379, 1383, 1389, 1523, 1518];
 
-  const isTherapy = therapyIds.includes(event.data?.id ?? 0);
-  const slotsPerDay = useSlotsForAvailableDates(dates, isTherapy, event.data?.id === 1518, schedule?.slots);
+  const isTherapy = therapyIds.includes(((event.data as any)?.id as any) ?? 0);
+  const slotsPerDay = useSlotsForAvailableDates(
+    dates,
+    isTherapy,
+    ((event.data as any)?.id as any) === 1518,
+    schedule?.slots
+  );
 
   return (
     <>

@@ -29,7 +29,7 @@ function Select<
 >({ className, ...props }: SelectProps<Option, IsMulti, Group>) {
   return (
     <ReactSelect
-      theme={(theme) => ({
+      theme={(theme: any) => ({
         ...theme,
         borderRadius: 2,
         colors: {
@@ -41,7 +41,7 @@ function Select<
         },
       })}
       styles={{
-        option: (provided, state) => ({
+        option: (provided: any, state: any) => ({
           ...provided,
           color: state.isSelected ? "var(--brand-text-color)" : "black",
           ":active": {
@@ -72,23 +72,23 @@ export function UnstyledSelect<
     <ReactSelect
       {...props}
       isSearchable={false}
-      theme={(theme) => ({ ...theme, borderRadius: 0, border: "none" })}
+      theme={(theme: any) => ({ ...theme, borderRadius: 0, border: "none" })}
       components={{
         IndicatorSeparator: () => null,
         Input: InputComponent,
       }}
       styles={{
-        container: (provided) => ({
+        container: (provided: any) => ({
           ...provided,
           width: "100%",
         }),
-        control: (provided) => ({
+        control: (provided: any) => ({
           ...provided,
           backgroundColor: " transparent",
           border: "none",
           boxShadow: "none",
         }),
-        option: (provided, state) => ({
+        option: (provided: any, state: any) => ({
           ...provided,
           color: state.isSelected ? "var(--brand-text-color)" : "black",
           ":active": {

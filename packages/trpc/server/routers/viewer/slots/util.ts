@@ -6,7 +6,7 @@ import type z from "zod";
 import CrmManager from "@calcom/core/crmManager/crmManager";
 import { getAggregatedAvailability } from "@calcom/core/getAggregatedAvailability";
 import { getBusyTimesForLimitChecks } from "@calcom/core/getBusyTimes";
-import type { CurrentSeats, IFromUser, IToUser } from "@calcom/core/getUserAvailability";
+import type { CurrentSeats, IFromUser, IToUser, GetAvailabilityUser } from "@calcom/core/getUserAvailability";
 import { getUsersAvailability } from "@calcom/core/getUserAvailability";
 import type { Dayjs } from "@calcom/dayjs";
 import dayjs from "@calcom/dayjs";
@@ -435,8 +435,6 @@ export async function getAvailableSlots({ input, ctx }: GetScheduleOptions): Pro
   }
   let currentSeats: CurrentSeats | undefined;
 
-  let teamMember: string | undefined;
-
   let hosts =
     eventType.hosts?.length && eventType.schedulingType
       ? eventType.hosts
@@ -466,25 +464,18 @@ export async function getAvailableSlots({ input, ctx }: GetScheduleOptions): Pro
     hosts = hosts.filter((host) => host.user.id === originalRescheduledBooking?.userId || 0);
   }
 
-  let usersWithCredentials = hosts.map(({ isFixed, user }) => ({ isFixed, ...user }));
+  const teamMemberHost = hosts.find((host) => host.user.email === input?.teamMemberEmail);
 
-  if (eventType.schedulingType === SchedulingType.ROUND_ROBIN && input.bookerEmail) {
-    const crmContactOwner = await getCRMContactOwnerForRRLeadSkip(
-      input.bookerEmail,
-      eventType?.metadata?.apps
-    );
-    const contactOwnerHost = hosts.find((host) => host.user.email === crmContactOwner);
+  // If the requested team member is a fixed host proceed as normal else get availability like the requested member is a fixed host
+  const usersWithCredentials =
+    !input.teamMemberEmail || !teamMemberHost || teamMemberHost.isFixed
+      ? hosts.map(({ isFixed, user }) => ({ isFixed, ...user }))
+      : hosts.reduce((usersArray, host) => {
+          if (host.isFixed || host.user.email === input.teamMemberEmail)
+            usersArray.push({ ...host.user, isFixed: host.isFixed });
 
-    if (contactOwnerHost) {
-      teamMember = contactOwnerHost.user.email;
-      const contactOwnerIsRRHost = !contactOwnerHost.isFixed;
-
-      usersWithCredentials = usersWithCredentials.filter(
-        (user) => user.email !== contactOwnerHost.user.email && (!contactOwnerIsRRHost || user.isFixed)
-      );
-      usersWithCredentials.push({ ...contactOwnerHost.user, isFixed: true });
-    }
-  }
+          return usersArray;
+        }, [] as (GetAvailabilityUser & { isFixed: boolean })[]);
 
   const durationToUse = input.duration || 0;
 
@@ -505,70 +496,87 @@ export async function getAvailableSlots({ input, ctx }: GetScheduleOptions): Pro
   };
 
   const allUserIds = usersWithCredentials.map((user) => user.id);
-
-  const currentBookingsAllUsers = await prisma.booking.findMany({
-    where: {
-      OR: [
-        // User is primary host (individual events, or primary organizer)
-        {
-          ...sharedQuery,
-          userId: {
-            in: allUserIds,
-          },
-        },
-        // The current user has a different booking at this time he/she attends
-        {
-          ...sharedQuery,
-          attendees: {
-            some: {
-              email: {
-                in: usersWithCredentials.map((user) => user.email),
-              },
-            },
-          },
-        },
-        {
-          startTime: { lte: endTimeDate },
-          endTime: { gte: startTimeDate },
-          eventType: {
-            id: eventType.id,
-            requiresConfirmation: true,
-            requiresConfirmationWillBlockSlot: true,
-          },
-          status: {
-            in: [BookingStatus.PENDING],
-          },
-        },
-      ],
+  const bookingsSelect = {
+    id: true,
+    uid: true,
+    userId: true,
+    startTime: true,
+    endTime: true,
+    title: true,
+    attendees: true,
+    eventType: {
+      select: {
+        id: true,
+        onlyShowFirstAvailableSlot: true,
+        afterEventBuffer: true,
+        beforeEventBuffer: true,
+        seatsPerTimeSlot: true,
+        requiresConfirmationWillBlockSlot: true,
+        requiresConfirmation: true,
+      },
     },
-    select: {
-      id: true,
-      uid: true,
-      userId: true,
-      startTime: true,
-      endTime: true,
-      title: true,
-      attendees: true,
-      eventType: {
+    ...(!!eventType?.seatsPerTimeSlot && {
+      _count: {
         select: {
-          id: true,
-          onlyShowFirstAvailableSlot: true,
-          afterEventBuffer: true,
-          beforeEventBuffer: true,
-          seatsPerTimeSlot: true,
-          requiresConfirmationWillBlockSlot: true,
-          requiresConfirmation: true,
+          seatsReferences: true,
         },
       },
-      ...(!!eventType?.seatsPerTimeSlot && {
-        _count: {
-          select: {
-            seatsReferences: true,
-          },
-        },
-      }),
+    }),
+  };
+
+  const currentBookingsAllUsersQueryOne = prisma.booking.findMany({
+    where: {
+      ...sharedQuery,
+      userId: {
+        in: allUserIds,
+      },
+    },
+    select: {
+      ...bookingsSelect,
     },
   });
+
+  const currentBookingsAllUsersQueryTwo = prisma.booking.findMany({
+    where: {
+      ...sharedQuery,
+      attendees: {
+        some: {
+          email: {
+            in: usersWithCredentials.map((user) => user.email),
+          },
+        },
+      },
+    },
+    select: {
+      ...bookingsSelect,
+    },
+  });
+
+  const currentBookingsAllUsersQueryThree = prisma.booking.findMany({
+    where: {
+      startTime: { lte: endTimeDate },
+      endTime: { gte: startTimeDate },
+      eventType: {
+        id: eventType.id,
+        requiresConfirmation: true,
+        requiresConfirmationWillBlockSlot: true,
+      },
+      status: {
+        in: [BookingStatus.PENDING],
+      },
+    },
+    select: {
+      ...bookingsSelect,
+    },
+  });
+
+  const [resultOne, resultTwo, resultThree] = await Promise.all([
+    currentBookingsAllUsersQueryOne,
+    currentBookingsAllUsersQueryTwo,
+    currentBookingsAllUsersQueryThree,
+  ]);
+
+  const currentBookingsAllUsers = [...resultOne, ...resultTwo, ...resultThree];
 
   const bookingLimits = parseBookingLimit(eventType?.bookingLimits);
   const durationLimits = parseDurationLimit(eventType?.durationLimits);

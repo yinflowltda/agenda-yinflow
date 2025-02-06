@@ -13,9 +13,6 @@ export class ManagedUserOutput {
   @ApiProperty({ example: "alice" })
   username!: string | null;
 
-  @ApiProperty({ example: "alice" })
-  name!: string | null;
-
   @ApiProperty({ example: "America/New_York" })
   timeZone!: string;
 

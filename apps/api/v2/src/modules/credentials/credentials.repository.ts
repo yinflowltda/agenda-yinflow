@@ -9,12 +9,12 @@ import { APPS_TYPE_ID_MAPPING } from "@calcom/platform-constants";
 export class CredentialsRepository {
   constructor(private readonly dbRead: PrismaReadService, private readonly dbWrite: PrismaWriteService) {}
 
-  async upsertAppCredential(
+  async createAppCredential(
     type: keyof typeof APPS_TYPE_ID_MAPPING,
     key: Prisma.InputJsonValue,
-    userId: number,
-    credentialId?: number | null
+    userId: number
   ) {
+    const credential = await this.getByTypeAndUserId(type, userId);
     return this.dbWrite.prisma.credential.upsert({
       create: {
         type,
@@ -27,17 +27,13 @@ export class CredentialsRepository {
         invalid: false,
       },
       where: {
-        id: credentialId ?? 0,
+        id: credential?.id ?? 0,
       },
     });
   }
 
   getByTypeAndUserId(type: string, userId: number) {
     return this.dbWrite.prisma.credential.findFirst({ where: { type, userId } });
-  }
-
-  getAllUserCredentialsByTypeAndId(type: string, userId: number) {
-    return this.dbRead.prisma.credential.findMany({ where: { type, userId } });
   }
 
   getUserCredentialsByIds(userId: number, credentialIds: number[]) {
@@ -47,30 +43,6 @@ export class CredentialsRepository {
           in: credentialIds,
         },
         userId: userId,
-      },
-      select: {
-        id: true,
-        type: true,
-        key: true,
-        userId: true,
-        teamId: true,
-        appId: true,
-        invalid: true,
-        user: {
-          select: {
-            email: true,
-          },
-        },
-      },
-    });
-  }
-
-  async getUserCredentialById(userId: number, credentialId: number, type: string) {
-    return await this.dbRead.prisma.credential.findUnique({
-      where: {
-        userId,
-        type,
-        id: credentialId,
       },
       select: {
         id: true,

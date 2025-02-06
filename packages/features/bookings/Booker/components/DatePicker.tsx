@@ -18,12 +18,7 @@ export const DatePicker = ({
   scrollToTimeSlots,
 }: {
   event: {
-    data?: {
-      users: Pick<User, "weekStart">[];
-      recurringEvent: {
-        freq: number;
-      };
-    } | null;
+    data?: { users: Pick<User, "weekStart">[] } | null;
   };
   schedule: useScheduleForEventReturnType;
   classNames?: {
@@ -47,7 +42,7 @@ export const DatePicker = ({
   );
   const nonEmptyScheduleDays = useNonEmptyScheduleDays(schedule?.data?.slots, {
     occurenceCount,
-    recurringEventFreq: event?.data?.recurringEvent?.freq,
+    recurringEventFreq: (event?.data as any)?.recurringEvent?.freq,
   });
   const browsingDate = month ? dayjs(month) : dayjs().startOf("month");
 

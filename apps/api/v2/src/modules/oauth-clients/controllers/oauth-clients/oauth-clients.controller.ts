@@ -172,7 +172,6 @@ export class OAuthClientsController {
       id: user.id,
       email: user.email,
       username: user.username,
-      name: user.name,
       timeZone: user.timeZone,
       weekStart: user.weekStart,
       createdDate: user.createdDate,

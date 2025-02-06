@@ -130,7 +130,6 @@ export async function ensureAvailableUsers(
     try {
       const foundConflict = checkForConflicts(bufferedBusyTimes, startDateTimeUtc, duration);
       // no conflicts found, add to available users.
-
       if (!foundConflict) {
         availableUsers.push(user);
       }

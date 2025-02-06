@@ -18,15 +18,6 @@ export class OrganizationsMembershipRepository {
     });
   }
 
-  async findOrgMembershipByUserId(organizationId: number, userId: number) {
-    return this.dbRead.prisma.membership.findFirst({
-      where: {
-        teamId: organizationId,
-        userId,
-      },
-    });
-  }
-
   async deleteOrgMembership(organizationId: number, membershipId: number) {
     return this.dbWrite.prisma.membership.delete({
       where: {

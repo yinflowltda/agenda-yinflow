@@ -32,7 +32,7 @@ export const sendFeedbackFormbricks = async (userId: number, feedback: Feedback)
         "formbricks-rating-question": ratingValue,
       },
     });
-    await api.client.people.update(formbricksUserId, {
+    await (api.client.people as any).update(formbricksUserId, {
       attributes: {
         email: feedback.email,
         username: feedback.username,

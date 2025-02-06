@@ -72,8 +72,4 @@ export class UpdateOrgTeamDto {
   @IsOptional()
   @IsString()
   readonly weekStart?: string = "Sunday";
-
-  @IsOptional()
-  @IsString()
-  readonly bookingLimits?: string;
 }
