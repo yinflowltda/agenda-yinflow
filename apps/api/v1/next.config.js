@@ -54,19 +54,19 @@ const nextConfig = {
         },
         {
           source: "/api/v2",
-          destination: "https://api.agenda.yinflow.life/health",
+          destination: `${process.env.NEXT_PUBLIC_API_V2_ROOT_URL}/health`,
         },
         {
           source: "/api/v2/health",
-          destination: "https://api.agenda.yinflow.life/health",
+          destination: `${process.env.NEXT_PUBLIC_API_V2_ROOT_URL}/health`,
         },
         {
           source: "/api/v2/docs/:path*",
-          destination: "https://api.agenda.yinflow.life/docs/:path*",
+          destination: `${process.env.NEXT_PUBLIC_API_V2_ROOT_URL}/docs/:path*`,
         },
         {
           source: "/api/v2/:path*",
-          destination: "https://api.agenda.yinflow.life/api/v2/:path*",
+          destination: `${process.env.NEXT_PUBLIC_API_V2_ROOT_URL}/api/v2/:path*`,
         },
         // This redirects requests to api/v*/ to /api/ passing version as a query parameter.
         {
