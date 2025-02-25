@@ -25,6 +25,14 @@ import { SetupAvailability } from "@components/getting-started/steps-views/Setup
 import UserProfile from "@components/getting-started/steps-views/UserProfile";
 import { UserSettings } from "@components/getting-started/steps-views/UserSettings";
 
+type Step =
+  | "user-settings"
+  | "connected-calendar"
+  | "connected-video"
+  | "setup-availability"
+  | "user-profile"
+  | "add-certificate";
+
 const INITIAL_STEP = "user-settings";
 const BASE_STEPS = [
   "user-settings",
@@ -33,7 +41,7 @@ const BASE_STEPS = [
   "setup-availability",
   "user-profile",
   "add-certificate",
-] as const;
+] as Step[];
 
 type StepType = (typeof BASE_STEPS)[number];
 
@@ -86,7 +94,8 @@ const stepRouteSchema = z.object({
 });
 
 export type PageProps = inferSSRProps<typeof getServerSideProps>;
-const OnboardingPage = (props: PageProps) => {
+
+const OnboardingPage = () => {
   const pathname = usePathname();
   const params = useParamsWithFallback();
 
@@ -99,19 +108,9 @@ const OnboardingPage = (props: PageProps) => {
     step: Array.isArray(params.step) ? params.step : [params.step],
   });
 
-  const currentStep = result.success ? result.data.step[0] : INITIAL_STEP;
+  const currentStep = result.success ? (result.data.step as Step[])[0] : INITIAL_STEP;
   const from = result.success ? result.data.from : "";
 
-  // TODO: Add this in when we have solved the ability to move to tokens accept invite and note invitedto
-  // Ability to accept other pending invites if any (low priority)
-  // if (props.hasPendingInvites) {
-  //   headers.unshift(
-  //     props.hasPendingInvites && {
-  //       title: `${t("email_no_user_invite_heading", { appName: APP_NAME })}`,
-  //       subtitle: [], // TODO: come up with some subtitle text here
-  //     }
-  //   );
-  // }
   const { steps, headers } = getStepsAndHeadersForUser(t);
   const stepTransform = (step: StepType) => {
     const stepIndex = steps.indexOf(step as (typeof steps)[number]);
@@ -126,6 +125,11 @@ const OnboardingPage = (props: PageProps) => {
   const goToNextStep = () => {
     const nextIndex = currentStepIndex + 1;
     const newStep = steps[nextIndex];
+    router.push(`/getting-started/${stepTransform(newStep)}`);
+  };
+
+  const goToIndex = (index: number) => {
+    const newStep = steps[index];
     router.push(`/getting-started/${stepTransform(newStep)}`);
   };
 
