@@ -11,6 +11,7 @@ const config = {
     zh: ["zh-CN"],
   },
   reloadOnPrerender: process.env.NODE_ENV !== "production",
+  use: typeof window === "undefined" ? ["fs-backend"] : [],
 };
 
 module.exports = config;

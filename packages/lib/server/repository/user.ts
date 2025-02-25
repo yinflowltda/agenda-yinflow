@@ -4,7 +4,6 @@ import { whereClauseForOrgWithSlugOrRequestedSlug } from "@calcom/ee/organizatio
 import { hashPassword } from "@calcom/features/auth/lib/hashPassword";
 import logger from "@calcom/lib/logger";
 import { safeStringify } from "@calcom/lib/safeStringify";
-import { getTranslation } from "@calcom/lib/server/i18n";
 import prisma from "@calcom/prisma";
 import { availabilityUserSelect } from "@calcom/prisma";
 import { Prisma } from "@calcom/prisma/client";
@@ -595,7 +594,9 @@ export class UserRepository {
     console.log("create user", { email, username, organizationId });
     const password = createHash("md5").update(`${email}${process.env.CALENDSO_ENCRYPTION_KEY}`).digest("hex");
     const hashedPassword = await hashPassword(password);
-    const t = await getTranslation("en", "common");
+    const t = () => {
+      return "";
+    };
     const availability = getAvailabilityFromSchedule(DEFAULT_SCHEDULE);
 
     return await prisma.user.create({
