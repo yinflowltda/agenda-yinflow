@@ -5,6 +5,7 @@ import type { IconName } from "./icon-names";
 function Icon({
   name,
   size = 16,
+  className,
   ...props
 }: SVGProps<SVGSVGElement> & {
   name: IconName;

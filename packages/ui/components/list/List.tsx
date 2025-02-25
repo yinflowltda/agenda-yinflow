@@ -103,7 +103,7 @@ export function ListLinkItem(props: ListLinkItemProps) {
             </Badge>
           )}
         </div>
-        <h2 className="min-h-4 mt-2 text-sm font-normal leading-none text-neutral-600">
+        <h2 className="mt-2 min-h-4 text-sm font-normal leading-none text-neutral-600">
           {subHeading.substring(0, 100)}
           {subHeading.length > 100 && "..."}
         </h2>
@@ -139,7 +139,7 @@ export function ListItemText<TComponent extends keyof JSX.IntrinsicElements = "s
     component,
     {
       ...passThroughProps,
-      className: classNames("text-sm text-subtle truncate", props.className),
+      className: classNames("text-sm text-subtle truncate prose", props.className),
       "data-testid": "list-item-text",
     },
     props.children

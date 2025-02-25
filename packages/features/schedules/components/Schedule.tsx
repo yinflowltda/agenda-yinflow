@@ -417,7 +417,6 @@ const TimeRangeField = ({
           } else {
             onChange({ ...value, start: newStart });
           }
-          handleSubmit && handleSubmit(getValues() as AvailabilityFormValues);
         }}
       />
       <span className="text-default w-2 self-center"> - </span>

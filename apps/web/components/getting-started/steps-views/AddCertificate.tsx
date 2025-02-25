@@ -225,4 +225,4 @@ const AddCertificate = () => {
   );
 };
 
-export default AddCertificate;
+export { AddCertificate };

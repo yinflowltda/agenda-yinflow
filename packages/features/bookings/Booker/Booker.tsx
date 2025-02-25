@@ -6,10 +6,12 @@ import StickyBox from "react-sticky-box";
 import { shallow } from "zustand/shallow";
 
 import BookingPageTagManager from "@calcom/app-store/BookingPageTagManager";
+import { useIsPlatformBookerEmbed } from "@calcom/atoms/monorepo";
 import dayjs from "@calcom/dayjs";
 import { getQueryParam } from "@calcom/features/bookings/Booker/utils/query-param";
 import { useNonEmptyScheduleDays } from "@calcom/features/schedules";
 import classNames from "@calcom/lib/classNames";
+import { useCompatSearchParams } from "@calcom/lib/hooks/useCompatSearchParams";
 import { BookerLayouts } from "@calcom/prisma/zod-utils";
 
 import "../../../../apps/web/styles/custom-embed.css";
@@ -17,6 +19,7 @@ import { VerifyCodeDialog } from "../components/VerifyCodeDialog";
 import { AvailableTimeSlots } from "./components/AvailableTimeSlots";
 import { BookEventForm } from "./components/BookEventForm";
 import { BookFormAsModal } from "./components/BookEventForm/BookFormAsModal";
+import { DryRunMessage } from "./components/DryRunMessage";
 import { EventMeta } from "./components/EventMeta";
 import { HavingTroubleFindingTime } from "./components/HavingTroubleFindingTime";
 import { Header } from "./components/Header";
@@ -29,9 +32,10 @@ import { NotFound } from "./components/Unavailable";
 import { fadeInLeft, getBookerSizeClassNames, useBookerResizeAnimation } from "./config";
 import { useBookerStore } from "./store";
 import type { BookerProps, WrappedBookerProps } from "./types";
+import { isBookingDryRun } from "./utils/isBookingDryRun";
 
 const loadFramerFeatures = () => import("./framer-features").then((res) => res.default);
-const PoweredBy = dynamic(() => import("@calcom/ee/components/PoweredBy"));
+const PoweredBy = dynamic(() => import("@calcom/ee/components/PoweredBy").then((mod) => mod.default));
 const UnpublishedEntity = dynamic(() =>
   import("@calcom/ui/components/unpublished-entity/UnpublishedEntity").then((mod) => mod.UnpublishedEntity)
 );
@@ -66,7 +70,13 @@ const BookerComponent = ({
   isPlatform,
   orgBannerUrl,
   customClassNames,
+  areInstantMeetingParametersSet = false,
+  userLocale,
+  hasValidLicense,
+  renderCaptcha,
 }: BookerProps & WrappedBookerProps) => {
+  const searchParams = useCompatSearchParams();
+  const isPlatformBookerEmbed = useIsPlatformBookerEmbed();
   const [bookerState, setBookerState] = useBookerStore((state) => [state.state, state.setState], shallow);
   const selectedDate = useBookerStore((state) => state.selectedDate);
   const {
@@ -137,6 +147,7 @@ const BookerComponent = ({
   const scrolledToTimeslotsOnce = useRef(false);
   const scrollToTimeSlots = () => {
     if (isMobile && !isEmbed && !scrolledToTimeslotsOnce.current) {
+      // eslint-disable-next-line @calcom/eslint/no-scroll-into-view-embed -- Conditional within !isEmbed condition
       timeslotsRef.current?.scrollIntoView({ behavior: "smooth" });
       scrolledToTimeslotsOnce.current = true;
     }
@@ -157,6 +168,7 @@ const BookerComponent = ({
     () => (
       <BookEventForm
         key={key}
+        renderCaptcha={renderCaptcha}
         onCancel={() => {
           setSelectedTimeslot(null);
           if (seatedEventData.bookingUid) {
@@ -175,7 +187,7 @@ const BookerComponent = ({
         isVerificationCodeSending={isVerificationCodeSending}
         isPlatform={isPlatform}>
         <>
-          {verifyCode ? (
+          {verifyCode && formEmail ? (
             <VerifyCodeDialog
               isOpenDialog={isEmailVerificationModalVisible}
               setIsOpenDialog={setEmailVerificationModalVisible}
@@ -199,6 +211,7 @@ const BookerComponent = ({
               onGoBack={() => {
                 onGoBackInstantMeeting();
               }}
+              orgName={event.data?.entity?.name}
             />
           )}
         </>
@@ -260,6 +273,8 @@ const BookerComponent = ({
     <>
       {event.data && !isPlatform ? <BookingPageTagManager eventType={event.data} /> : <></>}
 
+      {isBookingDryRun(searchParams) && <DryRunMessage isEmbed={isEmbed} />}
+
       <div
         className={classNames(
           // In a popup embed, if someone clicks outside the main(having main class or main tag), it closes the embed
@@ -289,7 +304,9 @@ const BookerComponent = ({
                   (layout === BookerLayouts.COLUMN_VIEW || layout === BookerLayouts.WEEK_VIEW) &&
                     "bg-default dark:bg-muted sticky top-0 z-10"
                 )}>
-                {!isPlatform ? (
+                {isPlatform && layout === BookerLayouts.MONTH_VIEW ? (
+                  <></>
+                ) : (
                   <Header
                     isMyLink={Boolean(username === sessionUsername)}
                     eventSlug={eventSlug}
@@ -319,8 +336,6 @@ const BookerComponent = ({
                       )
                     }
                   />
-                ) : (
-                  <></>
                 )}
               </BookerSection>
             )}
@@ -328,10 +343,10 @@ const BookerComponent = ({
               <BookerSection
                 area="meta"
                 className="max-w-screen flex w-full flex-col md:w-[var(--booker-meta-width)]">
-                {!hideEventTypeDetails && orgBannerUrl && !isPlatform && (
+                {!hideEventTypeDetails && orgBannerUrl && (
                   <img
                     loading="eager"
-                    className="-mb-9 ltr:rounded-tl-md rtl:rounded-tr-md"
+                    className="-mb-9 h-16 object-cover object-top sm:h-auto ltr:rounded-tl-md rtl:rounded-tr-md"
                     alt="org banner"
                     src={orgBannerUrl}
                   />
@@ -347,6 +362,7 @@ const BookerComponent = ({
                   isOcurrence={bookerState === "booking" && shouldShowFormInDialog}
                   isPending={event.isPending}
                   isPlatform={isPlatform}
+                  locale={userLocale}
                 />
                 {layout !== BookerLayouts.MONTH_VIEW &&
                   !(layout === "mobile" && bookerState === "booking") && (
@@ -440,30 +456,32 @@ const BookerComponent = ({
           }}
         />
 
-        {bookerState !== "booking" && event.data?.isInstantEvent && (
-          <div
-            className={classNames(
-              "animate-fade-in-up  z-40 my-2 opacity-0",
-              layout === BookerLayouts.MONTH_VIEW && isEmbed ? "" : "fixed bottom-2"
-            )}
-            style={{ animationDelay: "1s" }}>
-            <InstantBooking
-              event={event.data}
-              onConnectNow={() => {
-                onConnectNowInstantMeeting();
-              }}
-            />
-          </div>
-        )}
-        {!hideBranding && !isPlatform && (
+        {bookerState !== "booking" &&
+          event.data?.showInstantEventConnectNowModal &&
+          areInstantMeetingParametersSet && (
+            <div
+              className={classNames(
+                "animate-fade-in-up  z-40 my-2 opacity-0",
+                layout === BookerLayouts.MONTH_VIEW && isEmbed ? "" : "fixed bottom-2"
+              )}
+              style={{ animationDelay: "1s" }}>
+              <InstantBooking
+                event={event.data}
+                onConnectNow={() => {
+                  onConnectNowInstantMeeting();
+                }}
+              />
+            </div>
+          )}
+        {!hideBranding && (!isPlatform || isPlatformBookerEmbed) && (
           <m.span
             key="logo"
             className={classNames(
-              "-z-10 mb-6 mt-auto pt-6 [&_img]:h-[15px]",
+              "mb-6 mt-auto pt-6 [&_img]:h-[15px]",
               hasDarkBackground ? "dark" : "",
               layout === BookerLayouts.MONTH_VIEW ? "block" : "hidden"
             )}>
-            <PoweredBy logoOnly />
+            <PoweredBy logoOnly hasValidLicense={hasValidLicense} />
           </m.span>
         )}
       </div>

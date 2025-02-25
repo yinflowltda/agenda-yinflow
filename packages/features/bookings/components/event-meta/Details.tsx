@@ -4,7 +4,7 @@ import { useBookerStore } from "@calcom/features/bookings/Booker/store";
 import { PriceIcon } from "@calcom/features/bookings/components/event-meta/PriceIcon";
 import type { BookerEvent } from "@calcom/features/bookings/types";
 import classNames from "@calcom/lib/classNames";
-import getPaymentAppData from "@calcom/lib/getPaymentAppData";
+import { getPaymentAppData } from "@calcom/lib/getPaymentAppData";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { Icon, type IconName } from "@calcom/ui";
 
@@ -152,11 +152,9 @@ export const EventDetails = ({
         switch (block) {
           case EventDetailBlocks.DURATION:
             return (
-              <div className="-mb-4">
-                <EventMetaBlock key={block} icon="clock">
-                  <EventDuration event={event} />
-                </EventMetaBlock>
-              </div>
+              <EventMetaBlock key={block} icon="clock" className="items-center">
+                <EventDuration event={event} />
+              </EventMetaBlock>
             );
 
           case EventDetailBlocks.LOCATION:

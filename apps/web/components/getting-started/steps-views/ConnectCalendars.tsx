@@ -14,7 +14,10 @@ interface IConnectCalendarsProps {
 
 const ConnectedCalendars = (props: IConnectCalendarsProps) => {
   const { nextStep } = props;
-  const queryConnectedCalendars = trpc.viewer.connectedCalendars.useQuery({ onboarding: true });
+  const queryConnectedCalendars = trpc.viewer.connectedCalendars.useQuery({
+    onboarding: true,
+    eventTypeId: null,
+  });
   const { t } = useLocale();
   const queryIntegrations = trpc.viewer.integrations.useQuery({
     variant: "calendar",
@@ -58,7 +61,7 @@ const ConnectedCalendars = (props: IConnectCalendarsProps) => {
 
       {/* Connect calendars list */}
       {firstCalendar === undefined && queryIntegrations.data && queryIntegrations.data.items.length > 0 && (
-        <List className="bg-default divide-subtle border-subtle mx-1 divide-y rounded-md border p-0 dark:bg-black sm:mx-0">
+        <List className="bg-default divide-subtle border-subtle mx-1 divide-y rounded-md border p-0 sm:mx-0 dark:bg-black">
           {queryIntegrations.data &&
             queryIntegrations.data.items.map((item) => (
               <li key={item.title}>
