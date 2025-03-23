@@ -16,6 +16,12 @@
   margin-bottom: 0px !important;
 }
 
+.title-class-name { 
+  line-height: 32px;
+  color: rgb(17, 69, 89);
+  font-size: 22px;
+}
+
 .description-class-font-size {
   font-size: 14px !important;
 }

@@ -79,7 +79,7 @@ export const EventMembers = ({
         ]}
       />
 
-      <p className="text-subtle mt-2 text-sm font-semibold">
+      <p className="text-subtle title-class-name mt-2 text-sm font-semibold">
         {showOnlyProfileName
           ? profile.name
           : shownUsers

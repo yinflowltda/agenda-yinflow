@@ -158,7 +158,7 @@ export const EventMeta = ({
             entity={event.entity}
             isPrivateLink={isPrivateLink}
           />
-          <EventTitle className={`${classNames?.eventMetaTitle} my-2`}>
+          <EventTitle className={`${classNames?.eventMetaTitle} title-class-font-size my-2`}>
             {translatedTitle ?? event?.title}
           </EventTitle>
           {(event.description || translatedDescription) && (
