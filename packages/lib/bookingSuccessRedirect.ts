@@ -148,7 +148,7 @@ export const getBookingRedirectExtraParams = (booking: SuccessRedirectBookingTyp
     hostName: bookingParams.hostName?.join(", "),
     attendeeName: bookingParams.attendeeName || undefined,
     hostStartTime: bookingParams.hostStartTime || undefined,
-    attendeeStartTime: bookingParams.attendeeStartTime || undefined,
+    attendeeStartTime: "teste",
   };
 
   return queryCompatibleParams;
