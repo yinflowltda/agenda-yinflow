@@ -190,7 +190,7 @@ export const useBookingSuccessRedirect = () => {
         query: {
           ...query,
           ...bookingExtraParams,
-          cpf: query.cpf || JSON.stringify(query),
+          cpf: query.cpf,
         },
         searchParams: new URLSearchParams(searchParams.toString()),
       });

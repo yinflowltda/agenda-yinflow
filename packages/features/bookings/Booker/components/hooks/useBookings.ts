@@ -21,6 +21,8 @@ import { showToast } from "@calcom/ui";
 
 import type { UseBookingFormReturnType } from "./useBookingForm";
 
+const ONLY_LETTERS_REGEX = /[^a-zA-Z]/g;
+
 export interface IUseBookings {
   event: {
     data?:
@@ -261,7 +263,7 @@ export const useBookings = ({ event, hashedLink, bookingForm, metadata, teamMemb
       const query = {
         isSuccessBookingPage: true,
         email: bookingForm.getValues("responses.email"),
-        cpf: bookingForm.getValues("responses.CPF"),
+        cpf: bookingForm.getValues("responses.CPF").replace(ONLY_LETTERS_REGEX, ""),
         eventTypeSlug: eventSlug,
         seatReferenceUid: "seatReferenceUid" in booking ? booking.seatReferenceUid : null,
         formerTime:
@@ -327,7 +329,7 @@ export const useBookings = ({ event, hashedLink, bookingForm, metadata, teamMemb
         isSuccessBookingPage: true,
         allRemainingBookings: true,
         email: bookingForm.getValues("responses.email"),
-        cpf: bookingForm.getValues("responses.CPF"),
+        cpf: bookingForm.getValues("responses.CPF").replace(ONLY_LETTERS_REGEX, ""),
         eventTypeSlug: eventSlug,
         formerTime:
           isRescheduling && bookingData?.startTime ? dayjs(bookingData.startTime).toString() : undefined,
