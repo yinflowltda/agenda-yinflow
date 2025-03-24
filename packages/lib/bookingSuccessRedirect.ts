@@ -149,7 +149,6 @@ export const getBookingRedirectExtraParams = (booking: SuccessRedirectBookingTyp
     attendeeName: bookingParams.attendeeName || undefined,
     hostStartTime: bookingParams.hostStartTime || undefined,
     attendeeStartTime: bookingParams.attendeeStartTime || undefined,
-    cpf: "49253791004",
   };
 
   return queryCompatibleParams;
@@ -191,6 +190,7 @@ export const useBookingSuccessRedirect = () => {
         query: {
           ...query,
           ...bookingExtraParams,
+          cpf: query.cpf || JSON.stringify(query),
         },
         searchParams: new URLSearchParams(searchParams.toString()),
       });
