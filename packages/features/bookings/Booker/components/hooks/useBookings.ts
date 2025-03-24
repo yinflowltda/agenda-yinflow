@@ -261,7 +261,7 @@ export const useBookings = ({ event, hashedLink, bookingForm, metadata, teamMemb
       const query = {
         isSuccessBookingPage: true,
         email: bookingForm.getValues("responses.email"),
-        cpf: bookingForm.getValues("responses.cpf"),
+        cpf: bookingForm.getValues("responses.CPF"),
         eventTypeSlug: eventSlug,
         seatReferenceUid: "seatReferenceUid" in booking ? booking.seatReferenceUid : null,
         formerTime:
@@ -327,6 +327,7 @@ export const useBookings = ({ event, hashedLink, bookingForm, metadata, teamMemb
         isSuccessBookingPage: true,
         allRemainingBookings: true,
         email: bookingForm.getValues("responses.email"),
+        cpf: bookingForm.getValues("responses.CPF"),
         eventTypeSlug: eventSlug,
         formerTime:
           isRescheduling && bookingData?.startTime ? dayjs(bookingData.startTime).toString() : undefined,
