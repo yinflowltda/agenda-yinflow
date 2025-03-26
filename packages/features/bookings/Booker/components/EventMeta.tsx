@@ -193,13 +193,12 @@ export const EventMeta = ({
                 />
               </EventMetaBlock>
             )}
-          </div>
-          <div>
-            <div
-              className={`${
-                showMessage ? "flex-col items-start " : "items-center "
-              }mb-4 flex gap-4 space-y-4 font-medium md:ml-28 md:pl-2`}>
-              {/* {rescheduleUid && bookingData && (
+            <div>
+              <div
+                className={`${
+                  showMessage ? "flex-col items-start " : "items-center "
+                }mb-4 flex gap-4 space-y-4 font-medium md:ml-28 md:pl-2`}>
+                {/* {rescheduleUid && bookingData && (
                 <EventMetaBlock icon="calendar">
                   {t("former_time")}
                   <br />
@@ -214,7 +213,7 @@ export const EventMeta = ({
                   </span>
                 </EventMetaBlock>
               )} */}
-              {/* {selectedTimeslot && (
+                {/* {selectedTimeslot && (
                 <EventMetaBlock icon="calendar">
                   <FromToTime
                     date={selectedTimeslot}
@@ -299,27 +298,28 @@ export const EventMeta = ({
                   </span>
                 )}
               </EventMetaBlock> */}
-              {bookerState === "booking" && eventTotalSeats && bookingSeatAttendeesQty ? (
-                <EventMetaBlock icon="user" className={`${colorClass}`}>
-                  <div className="text-bookinghighlight flex items-start text-sm">
-                    <p>
-                      <SeatsAvailabilityText
-                        showExact={!!seatedEventData.showAvailableSeatsCount}
-                        totalSeats={eventTotalSeats}
-                        bookedSeats={bookingSeatAttendeesQty || 0}
-                        variant="fraction"
-                      />
-                    </p>
-                  </div>
-                </EventMetaBlock>
-              ) : null}
+                {bookerState === "booking" && eventTotalSeats && bookingSeatAttendeesQty ? (
+                  <EventMetaBlock icon="user" className={`${colorClass}`}>
+                    <div className="text-bookinghighlight flex items-start text-sm">
+                      <p>
+                        <SeatsAvailabilityText
+                          showExact={!!seatedEventData.showAvailableSeatsCount}
+                          totalSeats={eventTotalSeats}
+                          bookedSeats={bookingSeatAttendeesQty || 0}
+                          variant="fraction"
+                        />
+                      </p>
+                    </div>
+                  </EventMetaBlock>
+                ) : null}
+              </div>
+              {showMessage && (
+                <span className="text-base">
+                  O dia da semana e horário escolhidos serão reservados para você nas próximas semanas
+                  conforme o plano escolhido.
+                </span>
+              )}
             </div>
-            {showMessage && (
-              <span className="text-base">
-                O dia da semana e horário escolhidos serão reservados para você nas próximas semanas conforme
-                o plano escolhido.
-              </span>
-            )}
           </div>
         </m.div>
       )}
