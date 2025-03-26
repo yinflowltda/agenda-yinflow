@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { md } from "@calcom/lib/markdownIt";
-import { telemetryEventTypes, useTelemetry } from "@calcom/lib/telemetry";
+import { useTelemetry } from "@calcom/lib/telemetry";
 import turndown from "@calcom/lib/turndownService";
 import { trpc } from "@calcom/trpc/react";
 import { Button, Editor, ImageUploader, Label, UserAvatar, showToast } from "@calcom/ui";
@@ -65,8 +65,6 @@ const UserProfile = ({ nextStep }: UserProfileProps) => {
 
   const onSubmit = handleSubmit((data: { bio: string }) => {
     const { bio } = data;
-
-    telemetry.event(telemetryEventTypes.onboardingFinished);
 
     mutation.mutate({
       bio,

@@ -12,8 +12,7 @@ import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { useParamsWithFallback } from "@calcom/lib/hooks/useParamsWithFallback";
 import { trpc } from "@calcom/trpc";
 import type { inferSSRProps } from "@calcom/types/inferSSRProps";
-import { Button, StepCard, Steps } from "@calcom/ui";
-import { Icon } from "@calcom/ui";
+import { Button, Icon, StepCard, Steps } from "@calcom/ui";
 import classNames from "@calcom/ui/classNames";
 
 import type { getServerSideProps } from "@lib/getting-started/[[...step]]/getServerSideProps";
@@ -144,11 +143,6 @@ const OnboardingPage = (props: PageProps) => {
     return INITIAL_STEP;
   };
   const currentStepIndex = steps.indexOf(currentStep);
-
-  const goToIndex = (index: number) => {
-    const newStep = steps[index];
-    router.push(`/getting-started/${stepTransform(newStep)}`);
-  };
 
   const goToNextStep = () => {
     const nextIndex = currentStepIndex + 1;

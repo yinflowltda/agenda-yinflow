@@ -2,8 +2,9 @@ import { useRouter } from "next/navigation";
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { telemetryEventTypes, useTelemetry } from "@calcom/lib/telemetry";
 import { trpc } from "@calcom/trpc/react";
-import { Button, Input, showToast } from "@calcom/ui";
+import { Button, Input } from "@calcom/ui";
 
 enum CertificateRegistrationStatus {
   PASSWORD_ERROR = "Senha do certificado inválida.",
@@ -18,16 +19,8 @@ const DIRECTUS_TOKEN = process.env.NEXT_PUBLIC_DIRECTUS_TOKEN || "";
 const AddCertificate = () => {
   const router = useRouter();
   const [user] = trpc.viewer.me.useSuspenseQuery();
+  const telemetry = useTelemetry();
   const pickerRef = useRef<HTMLInputElement>(null);
-
-  const mutation = trpc.viewer.updateProfile.useMutation({
-    onSuccess: async () => {
-      router.replace("/signup-success");
-    },
-    onError: () => {
-      showToast("Erro ao atualizar seu usuário.", "error");
-    },
-  });
 
   const [a1Src, setA1Src] = useState<File | null>(null);
   const [spedyCompanyID, setSpedyCompanyID] = useState<string>("");
@@ -77,7 +70,10 @@ const AddCertificate = () => {
                 setCertificateRegistrationStatus(CertificateRegistrationStatus.PASSWORD_ERROR);
                 break;
             }
-          else mutation.mutate({ completedOnboarding: true });
+          else {
+            telemetry.event(telemetryEventTypes.onboardingFinished);
+            router.replace("/signup-success");
+          }
         });
       })
       .finally(() => {
