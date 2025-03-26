@@ -110,19 +110,10 @@
   padding: 0.8rem !important;
 }
 
-/* ul.flex.items-center.border-muted {
-  position: absolute;
-} */
-
 .relative.z-10.mb-8.break-words.max-w-full.max-h-\[180px\].scroll-bar.pr-4 {
-  margin-left: 120px !important;
   margin-top: 10px;
   margin-bottom: 12px;
 }
-
-/* .space-y-4.font-medium.rtl\:-mr-2 {
-  margin-left: 120px !important;
-} */
 
 span.min-w-32.current-timezone.before\:bg-subtle.-mt-\[2px\].flex.h-6.max-w-full.items-center.justify-start.before\:absolute.before\:inset-0.before\:bottom-\[-3px\].before\:left-\[-30px\].before\:top-\[-3px\].before\:w-\[calc\(100\%_\+_35px\)\].before\:rounded-md.before\:py-3.before\:opacity-0.before\:transition-opacity {
   height: 1.5rem !important;

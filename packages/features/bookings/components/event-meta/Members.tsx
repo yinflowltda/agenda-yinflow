@@ -34,11 +34,6 @@ export const EventMembers = ({
 
   const showMembers = schedulingType !== SchedulingType.ROUND_ROBIN;
   const shownUsers = showMembers ? users : [];
-  // In some cases we don't show the user's names, but only show the profile name.
-  const showOnlyProfileName =
-    (profile.name && schedulingType === SchedulingType.ROUND_ROBIN) ||
-    !users.length ||
-    (profile.name !== users[0].name && schedulingType === SchedulingType.COLLECTIVE);
 
   const orgOrTeamAvatarItem =
     isDynamic || (!profile.image && !entity.logoUrl) || !entity.teamSlug
@@ -78,15 +73,6 @@ export const EventMembers = ({
           })),
         ]}
       />
-
-      <p className="text-subtle title-class-name mt-2 text-sm font-semibold">
-        {showOnlyProfileName
-          ? profile.name
-          : shownUsers
-              .map((user) => user.name)
-              .filter((name) => name)
-              .join(", ")}
-      </p>
     </>
   );
 };

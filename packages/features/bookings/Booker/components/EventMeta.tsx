@@ -12,6 +12,7 @@ import type { BookerEvent } from "@calcom/features/bookings/types";
 import { markdownToSafeHTMLClient } from "@calcom/lib/markdownToSafeHTMLClient";
 import type { EventTypeTranslation } from "@calcom/prisma/client";
 import { EventTypeAutoTranslatedField } from "@calcom/prisma/enums";
+import { SchedulingType } from "@calcom/prisma/enums";
 
 import i18nConfigration from "../../../../../i18n.json";
 import { fadeInUp } from "../config";
@@ -138,7 +139,15 @@ export const EventMeta = ({
     userLocale
   );
 
-  const startDate = selectedTimeslot ? new Date(selectedTimeslot) : new Date();
+  const showOnlyProfileName =
+    event &&
+    ((event.profile.name && event.schedulingType === SchedulingType.ROUND_ROBIN) ||
+      !event.subsetOfUsers.length ||
+      (event.profile.name !== event.subsetOfUsers[0].name &&
+        event.schedulingType === SchedulingType.COLLECTIVE));
+
+  const showMembers = event && event.schedulingType !== SchedulingType.ROUND_ROBIN;
+  const shownUsers = showMembers && event ? event.subsetOfUsers : [];
 
   return (
     <div
@@ -150,7 +159,11 @@ export const EventMeta = ({
         </m.div>
       )}
       {!isPending && !!event && (
-        <m.div {...fadeInUp} layout transition={{ ...fadeInUp.transition, delay: 0.3 }}>
+        <m.div
+          {...fadeInUp}
+          layout
+          transition={{ ...fadeInUp.transition, delay: 0.3 }}
+          style={{ display: "flex", gap: 24, opacity: 1, transform: "none", alignItems: "flex-start" }}>
           <EventMembers
             schedulingType={event.schedulingType}
             users={event.subsetOfUsers}
@@ -158,19 +171,29 @@ export const EventMeta = ({
             entity={event.entity}
             isPrivateLink={isPrivateLink}
           />
-          <EventTitle className={`${classNames?.eventMetaTitle} title-class-font-size my-2`}>
-            {translatedTitle ?? event?.title}
-          </EventTitle>
-          {(event.description || translatedDescription) && (
-            <EventMetaBlock contentClassName="mb-8 break-words max-w-full max-h-[180px] scroll-bar pr-4">
-              <div
-                // eslint-disable-next-line react/no-danger
-                dangerouslySetInnerHTML={{
-                  __html: markdownToSafeHTMLClient(translatedDescription ?? event.description),
-                }}
-              />
-            </EventMetaBlock>
-          )}
+          <div>
+            <p className="text-subtle title-class-name mt-2 text-sm font-semibold">
+              {showOnlyProfileName
+                ? event.profile.name
+                : shownUsers
+                    .map((user) => user.name)
+                    .filter((name) => name)
+                    .join(", ")}
+            </p>
+            <EventTitle className={`${classNames?.eventMetaTitle} title-class-font-size my-2`}>
+              {translatedTitle ?? event?.title}
+            </EventTitle>
+            {(event.description || translatedDescription) && (
+              <EventMetaBlock contentClassName="mb-8 break-words max-w-full max-h-[180px] scroll-bar pr-4">
+                <div
+                  // eslint-disable-next-line react/no-danger
+                  dangerouslySetInnerHTML={{
+                    __html: markdownToSafeHTMLClient(translatedDescription ?? event.description),
+                  }}
+                />
+              </EventMetaBlock>
+            )}
+          </div>
           <div>
             <div
               className={`${
