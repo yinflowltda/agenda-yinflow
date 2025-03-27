@@ -16,8 +16,7 @@ type FormData = {
   bio: string;
 };
 
-const DIRECTUS_TRIGGER_URL =
-  "https://painel.yinflow.life/flows/trigger/8f80566e-c262-40f1-a47e-bac429bdbf11  ";
+const DIRECTUS_BASE_URL = "https://agenda.yinflow.life/api";
 const DIRECTUS_TOKEN = process.env.NEXT_PUBLIC_DIRECTUS_TOKEN || "";
 
 const UserProfile = ({ nextStep }: UserProfileProps) => {
@@ -56,19 +55,17 @@ const UserProfile = ({ nextStep }: UserProfileProps) => {
             })
           );
         }
-        fetch(DIRECTUS_TRIGGER_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${DIRECTUS_TOKEN}`,
-          },
-          body: JSON.stringify({
-            profilePicture: user?.avatarUrl,
-            bio: getValues("bio"),
-            username: user?.username,
-            timezone: user?.timeZone,
-          }),
-        });
+        fetch(
+          `${DIRECTUS_BASE_URL}/post-user-data?profilePicture=${user?.avatarUrl}&bio=${getValues(
+            "bio"
+          )}&username=${user?.username}&timezone=${user?.timezone}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${DIRECTUS_TOKEN}`,
+            },
+          }
+        );
       } catch (error) {
         console.error(error);
       }
