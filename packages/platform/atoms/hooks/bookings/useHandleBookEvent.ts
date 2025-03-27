@@ -109,6 +109,14 @@ export const useHandleBookEvent = ({
         routingFormSearchParams,
       };
 
+      console.log(
+        "VASCO",
+        isInstantMeeting,
+        event.data?.recurringEvent?.freq,
+        recurringEventCount,
+        rescheduleUid
+      );
+
       if (isInstantMeeting) {
         handleInstantBooking(mapBookingToMutationInput(bookingInput), callbacks);
       } else if (event.data?.recurringEvent?.freq && recurringEventCount && !rescheduleUid) {
