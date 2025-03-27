@@ -19,6 +19,7 @@ async function handler(req: NextApiRequest & { userId?: number }) {
     const response = await fetch(DIRECTUS_BASE_URL, {
       method: "POST",
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${DIRECTUS_TOKEN}`,
       },
       body: JSON.stringify({
