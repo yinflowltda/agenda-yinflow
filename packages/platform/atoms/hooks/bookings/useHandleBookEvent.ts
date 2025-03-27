@@ -50,7 +50,10 @@ export const useHandleBookEvent = ({
   const rescheduledBy = useBookerStore((state) => state.rescheduledBy);
   const { t, i18n } = useLocale();
   const username = useBookerStore((state) => state.username);
-  const recurringEventCount = useBookerStore((state) => state.recurringEventCount);
+  const recurringEventCount = useBookerStore((state) => {
+    console.log("flamengo", state);
+    return state.recurringEventCount;
+  });
   const bookingData = useBookerStore((state) => state.bookingData);
   const seatedEventData = useBookerStore((state) => state.seatedEventData);
   const isInstantMeeting = useBookerStore((state) => state.isInstantMeeting);
@@ -108,14 +111,6 @@ export const useHandleBookEvent = ({
         orgSlug: orgSlug ? orgSlug : undefined,
         routingFormSearchParams,
       };
-
-      console.log(
-        "VASCO",
-        isInstantMeeting,
-        event.data?.recurringEvent?.freq,
-        recurringEventCount,
-        rescheduleUid
-      );
 
       if (isInstantMeeting) {
         handleInstantBooking(mapBookingToMutationInput(bookingInput), callbacks);
