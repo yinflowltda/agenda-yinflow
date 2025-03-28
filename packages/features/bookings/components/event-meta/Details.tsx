@@ -173,7 +173,7 @@ export const EventDetails = ({
             );
 
           case EventDetailBlocks.OCCURENCES:
-            if (!event.recurringEvent || rescheduleUid || !isOcurrence) return null;
+            if (!event.recurringEvent || rescheduleUid) return null;
 
             return (
               <EventMetaBlock key={block} icon="refresh-ccw">
