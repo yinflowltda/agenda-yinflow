@@ -12,7 +12,6 @@ import { useBookerTime } from "../../Booker/components/hooks/useBookerTime";
 
 export const EventOccurences = ({ event }: { event: Pick<BookerEvent, "recurringEvent"> }) => {
   const maxOccurences = event.recurringEvent?.count || null;
-  console.log("Cruzeiro", event.recurringEvent?.count);
   const { t, i18n } = useLocale();
   const [setRecurringEventCount, recurringEventCount, setOccurenceCount, occurenceCount] = useBookerStore(
     (state) => [
@@ -27,6 +26,9 @@ export const EventOccurences = ({ event }: { event: Pick<BookerEvent, "recurring
   const { timezone, timeFormat } = useBookerTime();
   const [warning, setWarning] = useState(false);
   // Set initial value in booker store.
+  useEffect(() => {
+    console.log("Cruzeiro", event.recurringEvent?.count);
+  }, [event.recurringEvent?.count]);
   useEffect(() => {
     if (!event.recurringEvent?.count) return;
     setOccurenceCount(occurenceCount || event.recurringEvent.count);
