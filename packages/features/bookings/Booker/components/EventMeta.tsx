@@ -48,6 +48,7 @@ export const EventMeta = ({
   event,
   isPending,
   isPlatform = true,
+  isOcurrence,
   isPrivateLink,
   classNames,
   locale,
