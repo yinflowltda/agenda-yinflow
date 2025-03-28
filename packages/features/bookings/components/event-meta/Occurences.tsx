@@ -27,9 +27,6 @@ export const EventOccurences = ({ event }: { event: Pick<BookerEvent, "recurring
   const [warning, setWarning] = useState(false);
   // Set initial value in booker store.
   useEffect(() => {
-    console.log("Cruzeiro", event.recurringEvent?.count);
-  }, [event.recurringEvent?.count]);
-  useEffect(() => {
     if (!event.recurringEvent?.count) return;
     setOccurenceCount(occurenceCount || event.recurringEvent.count);
     setRecurringEventCount(recurringEventCount || event.recurringEvent.count);
