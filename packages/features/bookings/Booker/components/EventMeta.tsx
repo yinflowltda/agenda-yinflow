@@ -1,7 +1,6 @@
 import { m } from "framer-motion";
 import dynamic from "next/dynamic";
-import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { shallow } from "zustand/shallow";
 
 import { Timezone as PlatformTimezoneSelect } from "@calcom/atoms/timezone";
@@ -16,15 +15,12 @@ import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { markdownToSafeHTMLClient } from "@calcom/lib/markdownToSafeHTMLClient";
 import type { EventTypeTranslation } from "@calcom/prisma/client";
 import { EventTypeAutoTranslatedField } from "@calcom/prisma/enums";
-import { SchedulingType } from "@calcom/prisma/enums";
 
 import i18nConfigration from "../../../../../i18n.json";
 import { fadeInUp } from "../config";
 import { useBookerStore } from "../store";
 import { FromToTime } from "../utils/dates";
 import { useBookerTime } from "./hooks/useBookerTime";
-
-const MOBILE_WIDTH = 768;
 
 const WebTimezoneSelect = dynamic(
   () => import("@calcom/features/components/timezone-select").then((mod) => mod.TimezoneSelect),
@@ -52,7 +48,6 @@ export const EventMeta = ({
   event,
   isPending,
   isPlatform = true,
-  isOcurrence,
   isPrivateLink,
   classNames,
   locale,
@@ -98,16 +93,13 @@ export const EventMeta = ({
   const bookerState = useBookerStore((state) => state.state);
   const bookingData = useBookerStore((state) => state.bookingData);
   const rescheduleUid = useBookerStore((state) => state.rescheduleUid);
-
-  const [seatedEventData] = useBookerStore(
+  const [seatedEventData, setSeatedEventData] = useBookerStore(
     (state) => [state.seatedEventData, state.setSeatedEventData],
     shallow
   );
+  const { i18n, t } = useLocale();
   const embedUiConfig = useEmbedUiConfig();
   const isEmbed = useIsEmbed();
-  const pathname = usePathname();
-  const [showMessage, setShowMessage] = useState(false);
-  const { i18n, t } = useLocale();
   const hideEventTypeDetails = isEmbed ? embedUiConfig.hideEventTypeDetails : false;
   const [TimezoneSelect] = useMemo(
     () => (isPlatform ? [PlatformTimezoneSelect] : [WebTimezoneSelect]),
@@ -120,19 +112,6 @@ export const EventMeta = ({
       setTimezone(event.schedule?.timeZone);
     }
   }, [event, setTimezone]);
-
-  useEffect(() => {
-    const hasRecurrenceInPath = pathname!.includes("semanal") || pathname!.includes("quinzenal");
-    const handleResize = () => {
-      setShowMessage(window.innerWidth < MOBILE_WIDTH && hasRecurrenceInPath);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    handleResize();
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, [pathname]);
 
   if (hideEventTypeDetails) {
     return null;
@@ -164,31 +143,15 @@ export const EventMeta = ({
     userLocale
   );
 
-  const showOnlyProfileName =
-    event &&
-    ((event.profile.name && event.schedulingType === SchedulingType.ROUND_ROBIN) ||
-      !event.subsetOfUsers.length ||
-      (event.profile.name !== event.subsetOfUsers[0].name &&
-        event.schedulingType === SchedulingType.COLLECTIVE));
-
-  const showMembers = event && event.schedulingType !== SchedulingType.ROUND_ROBIN;
-  const shownUsers = showMembers && event ? event.subsetOfUsers : [];
-
   return (
-    <div
-      className={`${classNames?.eventMetaContainer || ""} relative z-10 p-4 md:p-10`}
-      data-testid="event-meta">
+    <div className={`${classNames?.eventMetaContainer || ""} relative z-10 p-6`} data-testid="event-meta">
       {isPending && (
         <m.div {...fadeInUp} initial="visible" layout>
           <EventMetaSkeleton />
         </m.div>
       )}
       {!isPending && !!event && (
-        <m.div
-          {...fadeInUp}
-          layout
-          transition={{ ...fadeInUp.transition, delay: 0.3 }}
-          style={{ display: "flex", gap: 24, opacity: 1, transform: "none", alignItems: "flex-start" }}>
+        <m.div {...fadeInUp} layout transition={{ ...fadeInUp.transition, delay: 0.3 }}>
           <EventMembers
             schedulingType={event.schedulingType}
             users={event.subsetOfUsers}
@@ -196,111 +159,93 @@ export const EventMeta = ({
             entity={event.entity}
             isPrivateLink={isPrivateLink}
           />
-          <div>
-            <p className="text-subtle title-class-name mt-2 text-sm font-semibold">
-              {showOnlyProfileName
-                ? event.profile.name
-                : shownUsers
-                    .map((user) => user.name)
-                    .filter((name) => name)
-                    .join(", ")}
-            </p>
-            <EventTitle className={`${classNames?.eventMetaTitle} title-class-font-size my-2`}>
-              {translatedTitle ?? event?.title}
-            </EventTitle>
-            {(event.description || translatedDescription) && (
-              <EventMetaBlock contentClassName="mb-8 break-words max-w-full max-h-[180px] scroll-bar pr-4">
-                <div
-                  // eslint-disable-next-line react/no-danger
-                  dangerouslySetInnerHTML={{
-                    __html: markdownToSafeHTMLClient(translatedDescription ?? event.description),
-                  }}
+          <EventTitle className={`${classNames?.eventMetaTitle} my-2`}>
+            {translatedTitle ?? event?.title}
+          </EventTitle>
+          {(event.description || translatedDescription) && (
+            <EventMetaBlock contentClassName="mb-8 break-words max-w-full max-h-[180px] scroll-bar pr-4">
+              <div
+                // eslint-disable-next-line react/no-danger
+                dangerouslySetInnerHTML={{
+                  __html: markdownToSafeHTMLClient(translatedDescription ?? event.description),
+                }}
+              />
+            </EventMetaBlock>
+          )}
+          <div className="space-y-4 font-medium rtl:-mr-2">
+            {rescheduleUid && bookingData && (
+              <EventMetaBlock icon="calendar">
+                {t("former_time")}
+                <br />
+                <span className="line-through" data-testid="former_time_p">
+                  <FromToTime
+                    date={bookingData.startTime.toString()}
+                    duration={null}
+                    timeFormat={timeFormat}
+                    timeZone={timezone}
+                    language={i18n.language}
+                  />
+                </span>
+              </EventMetaBlock>
+            )}
+            {selectedTimeslot && (
+              <EventMetaBlock icon="calendar">
+                <FromToTime
+                  date={selectedTimeslot}
+                  duration={selectedDuration || event.length}
+                  timeFormat={timeFormat}
+                  timeZone={timezone}
+                  language={i18n.language}
                 />
               </EventMetaBlock>
             )}
-            <div>
-              <div className="space-y-4 font-medium rtl:-mr-2">
-                {rescheduleUid && bookingData && (
-                  <EventMetaBlock icon="calendar">
-                    {t("former_time")}
-                    <br />
-                    <span className="line-through" data-testid="former_time_p">
-                      <FromToTime
-                        date={bookingData.startTime.toString()}
-                        duration={null}
-                        timeFormat={timeFormat}
-                        timeZone={timezone}
-                        language={i18n.language}
-                      />
-                    </span>
-                  </EventMetaBlock>
-                )}
-                {selectedTimeslot && (
-                  <EventMetaBlock icon="calendar">
-                    <FromToTime
-                      date={selectedTimeslot}
-                      duration={selectedDuration || event.length}
-                      timeFormat={timeFormat}
-                      timeZone={timezone}
-                      language={i18n.language}
-                    />
-                  </EventMetaBlock>
-                )}
-                <EventDetails event={event} isOcurrence={isOcurrence} />
-                <EventMetaBlock
-                  className="cursor-pointer [&_.current-timezone:before]:focus-within:opacity-100 [&_.current-timezone:before]:hover:opacity-100"
-                  contentClassName="relative max-w-[90%]"
-                  icon="globe">
-                  {bookerState === "booking" ? (
-                    <>{timezone}</>
-                  ) : (
-                    <span
-                      className={`current-timezone before:bg-subtle min-w-32 -mt-[2px] flex h-6 max-w-full items-center justify-start before:absolute before:inset-0 before:bottom-[-3px] before:left-[-30px] before:top-[-3px] before:w-[calc(100%_+_35px)] before:rounded-md before:py-3 before:opacity-0 before:transition-opacity ${
-                        event.lockTimeZoneToggleOnBookingPage ? "cursor-not-allowed" : ""
-                      }`}>
-                      <TimezoneSelect
-                        menuPosition="absolute"
-                        timezoneSelectCustomClassname={classNames?.eventMetaTimezoneSelect}
-                        classNames={{
-                          control: () =>
-                            "!min-h-0 p-0 w-full border-0 bg-transparent focus-within:ring-0 shadow-none!",
-                          menu: () => "!w-64 max-w-[90vw] mb-1 ",
-                          singleValue: () => "text-text py-1",
-                          indicatorsContainer: () => "ml-auto",
-                          container: () => "max-w-full",
-                        }}
-                        value={event.lockTimeZoneToggleOnBookingPage ? CURRENT_TIMEZONE : timezone}
-                        onChange={({ value }) => {
-                          setTimezone(value);
-                          setBookerStoreTimezone(value);
-                        }}
-                        isDisabled={event.lockTimeZoneToggleOnBookingPage}
-                      />
-                    </span>
-                  )}
-                </EventMetaBlock>
-                {bookerState === "booking" && eventTotalSeats && bookingSeatAttendeesQty ? (
-                  <EventMetaBlock icon="user" className={`${colorClass}`}>
-                    <div className="text-bookinghighlight flex items-start text-sm">
-                      <p>
-                        <SeatsAvailabilityText
-                          showExact={!!seatedEventData.showAvailableSeatsCount}
-                          totalSeats={eventTotalSeats}
-                          bookedSeats={bookingSeatAttendeesQty || 0}
-                          variant="fraction"
-                        />
-                      </p>
-                    </div>
-                  </EventMetaBlock>
-                ) : null}
-              </div>
-              {showMessage && (
-                <span className="text-base">
-                  O dia da semana e horário escolhidos serão reservados para você nas próximas semanas
-                  conforme o plano escolhido.
+            <EventDetails event={event} isOcurrence={isOcurrence} />
+            <EventMetaBlock
+              className="cursor-pointer [&_.current-timezone:before]:focus-within:opacity-100 [&_.current-timezone:before]:hover:opacity-100"
+              contentClassName="relative max-w-[90%]"
+              icon="globe">
+              {bookerState === "booking" ? (
+                <>{timezone}</>
+              ) : (
+                <span
+                  className={`current-timezone before:bg-subtle min-w-32 -mt-[2px] flex h-6 max-w-full items-center justify-start before:absolute before:inset-0 before:bottom-[-3px] before:left-[-30px] before:top-[-3px] before:w-[calc(100%_+_35px)] before:rounded-md before:py-3 before:opacity-0 before:transition-opacity ${
+                    event.lockTimeZoneToggleOnBookingPage ? "cursor-not-allowed" : ""
+                  }`}>
+                  <TimezoneSelect
+                    menuPosition="absolute"
+                    timezoneSelectCustomClassname={classNames?.eventMetaTimezoneSelect}
+                    classNames={{
+                      control: () =>
+                        "!min-h-0 p-0 w-full border-0 bg-transparent focus-within:ring-0 shadow-none!",
+                      menu: () => "!w-64 max-w-[90vw] mb-1 ",
+                      singleValue: () => "text-text py-1",
+                      indicatorsContainer: () => "ml-auto",
+                      container: () => "max-w-full",
+                    }}
+                    value={event.lockTimeZoneToggleOnBookingPage ? CURRENT_TIMEZONE : timezone}
+                    onChange={({ value }) => {
+                      setTimezone(value);
+                      setBookerStoreTimezone(value);
+                    }}
+                    isDisabled={event.lockTimeZoneToggleOnBookingPage}
+                  />
                 </span>
               )}
-            </div>
+            </EventMetaBlock>
+            {bookerState === "booking" && eventTotalSeats && bookingSeatAttendeesQty ? (
+              <EventMetaBlock icon="user" className={`${colorClass}`}>
+                <div className="text-bookinghighlight flex items-start text-sm">
+                  <p>
+                    <SeatsAvailabilityText
+                      showExact={!!seatedEventData.showAvailableSeatsCount}
+                      totalSeats={eventTotalSeats}
+                      bookedSeats={bookingSeatAttendeesQty || 0}
+                      variant="fraction"
+                    />
+                  </p>
+                </div>
+              </EventMetaBlock>
+            ) : null}
           </div>
         </m.div>
       )}
