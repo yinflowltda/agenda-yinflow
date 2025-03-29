@@ -29,6 +29,9 @@
     },
     "pages/api/book/event.ts": {
       "memory": 2048
+    },
+    "pages/api/**": {
+      "maxDuration": 30
     }
   }
 }
