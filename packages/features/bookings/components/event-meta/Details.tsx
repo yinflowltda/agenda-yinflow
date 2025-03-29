@@ -57,6 +57,7 @@ interface EventMetaProps {
   contentClassName?: string;
   className?: string;
   isDark?: boolean;
+  isOcurrence?: true;
 }
 
 /**
@@ -83,16 +84,17 @@ export const EventMetaBlock = ({
   contentClassName,
   className,
   isDark,
+  isOcurrence,
 }: EventMetaProps) => {
   if (!React.Children.count(children)) return null;
 
   return (
     <div
-      className={classNames(
+      className={`${classNames(
         "flex items-start justify-start text-sm",
         highlight ? "text-emphasis" : "text-text",
         className
-      )}>
+      )} ${isOcurrence ? "hidden" : ""}`}>
       {iconUrl ? (
         <img
           src={iconUrl}
