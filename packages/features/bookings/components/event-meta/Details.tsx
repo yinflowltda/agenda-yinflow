@@ -178,7 +178,7 @@ export const EventDetails = ({
             if (!event.recurringEvent || rescheduleUid) return null;
 
             return (
-              <EventMetaBlock key={block} icon="refresh-ccw">
+              <EventMetaBlock key={block} icon="refresh-ccw" isOcurrence>
                 <EventOccurences event={event} />
               </EventMetaBlock>
             );
