@@ -15,7 +15,7 @@ async function handler(req: NextApiRequest & { userId?: number }) {
   const username = req.query.username as string;
   const timezone = req.query.timezone as string;
   const email = req.query.email as string;
-  const id = req.query.id as string;
+  const calId = req.query.id as string;
 
   try {
     const response = await fetch(DIRECTUS_BASE_URL, {
@@ -30,7 +30,7 @@ async function handler(req: NextApiRequest & { userId?: number }) {
         username,
         timezone,
         email,
-        id,
+        calId,
       }),
     });
 
