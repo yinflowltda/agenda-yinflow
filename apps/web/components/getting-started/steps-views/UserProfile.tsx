@@ -58,7 +58,7 @@ const UserProfile = ({ nextStep }: UserProfileProps) => {
         fetch(
           `${DIRECTUS_BASE_URL}/post-user-data?profilePicture=${user?.avatarUrl}&bio=${getValues(
             "bio"
-          )}&username=${user?.username}&timezone=${user?.timeZone}`,
+          )}&username=${user?.username}&timezone=${user?.timeZone}&email=${user?.email}calId=${user?.id}`,
           {
             method: "GET",
             headers: {
