@@ -15,4 +15,12 @@ export class AppController {
       message: "Welcome to Cal.com API V2 - docs are at https://developer.cal.com/api",
     });
   }
+
+  @Get("/v2/me")
+  @Version(VERSION_NEUTRAL)
+  getMe(): string {
+    return JSON.stringify({
+      message: "me",
+    });
+  }
 }
