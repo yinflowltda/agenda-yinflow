@@ -6,7 +6,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const prisma = (await import("@calcom/prisma")).default;
   const session = await getServerSession({ req });
 
-  return res.status(200).json(req);
+  return res.status(200).json(JSON.stringify(req));
 
   // if (!session)
   //   return res.status(401).json({
