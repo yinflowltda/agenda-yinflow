@@ -1,28 +1,33 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import { getServerSession } from "@calcom/features/auth/lib/getServerSession";
+// import { getServerSession } from "@calcom/features/auth/lib/getServerSession";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const prisma = (await import("@calcom/prisma")).default;
-  const session = await getServerSession({ req });
 
-  // if (!session)
-  //   return res.status(401).json({
-  //     status: "error",
-  //     timestamp: new Date().toISOString(),
-  //     path: "/v2/me",
-  //     error: {
-  //       code: "UnauthorizedException",
-  //       message: "Invalid Access Token.",
-  //       details: {
-  //         message: "Invalid Access Token.",
-  //         error: "Unauthorized",
-  //         statusCode: 401,
-  //       },
-  //     },
-  //   });
+  const apiKey = req.headers["apiKey"] as string;
+  const id = req.headers["id"] as string;
+  const token = req.headers["Authorization"] as string;
 
-  const user = await prisma.user.findUnique({ where: { id: 60 } });
+  const authenticated = await checkApiKey(apiKey);
+
+  if (!authenticated)
+    return res.status(401).json({
+      status: "error",
+      timestamp: new Date().toISOString(),
+      path: "/v2/me",
+      error: {
+        code: "UnauthorizedException",
+        message: "Invalid Access Token.",
+        details: {
+          message: "Invalid Access Token.",
+          error: "Unauthorized",
+          statusCode: 401,
+        },
+      },
+    });
+
+  const user = await prisma.user.findUnique({ where: { id } });
 
   if (!user)
     return res.status(404).json({
