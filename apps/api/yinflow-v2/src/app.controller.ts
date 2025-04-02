@@ -18,6 +18,10 @@ import { ApiResponse, CreateBookingInput } from "@calcom/platform-types";
 
 import { supabase } from "./config/supabase";
 
+type BookingRequest = Request & {
+  userId?: number;
+};
+
 const AGENDA_BASE_URL = "https://agenda.yinflow.life/api";
 
 @Controller()
@@ -38,15 +42,26 @@ export class AppController {
 
   @Get("/v2/me")
   @Version(VERSION_NEUTRAL)
-  getMe(): string {
-    return JSON.stringify({
-      message: "me",
-    });
+  getMe() {
+    try {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-me`, {
+        method: "GET",
+      });
+
+      if (!response.ok) throw new HttpException(response.statusText, response.status);
+
+      return await response.json();
+
+    } catch (err) {
+      const error = err as Error;
+      throw new InternalServerErrorException(error?.message ?? errMsg);
+    }
+    throw new InternalServerErrorException("Could not get me.");
   }
 
   @Post("/v2/bookings")
   async createBooking(
-    @Req() req: any,
+    @Req() req: BookingRequest,
     @Body() body: CreateBookingInput
   ): Promise<ApiResponse<Partial<BookingResponse>>> {
     const { start, metadata, lengthInMinutes } = body;
