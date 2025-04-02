@@ -8,8 +8,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const prisma = (await import("@calcom/prisma")).default;
 
   const apiKey = req.headers["apiKey"] as string;
-  const id = req.headers["id"] as string;
   const token = req.headers["Authorization"] as string;
+
+  const id = req.query.id as string;
 
   const authenticated = await checkApiKey(apiKey);
 
@@ -30,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-  const user = await prisma.user.findUnique({ where: { id } });
+  const user = await prisma.user.findUnique({ where: { id: parseInt(id, 10) } });
 
   if (!user)
     return res.status(404).json({
