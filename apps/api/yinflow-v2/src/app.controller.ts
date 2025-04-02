@@ -42,7 +42,7 @@ export class AppController {
 
   @Get("/v2/me")
   @Version(VERSION_NEUTRAL)
-  getMe() {
+  async getMe() {
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-me`, {
         method: "GET",
