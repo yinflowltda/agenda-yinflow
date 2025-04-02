@@ -9,5 +9,8 @@ export const checkApiKey = async (apiKey: string): Promise<boolean> => {
 
   const result = await response.json();
 
-  return result.length > 0;
+  return {
+    response,
+    result,
+  };
 };
