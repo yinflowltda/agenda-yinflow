@@ -44,7 +44,7 @@ export class AppController {
     });
   }
 
-  @Post("/")
+  @Post("/v2/bookings")
   async createBooking(
     @Req() req: any,
     @Body() body: CreateBookingInput
