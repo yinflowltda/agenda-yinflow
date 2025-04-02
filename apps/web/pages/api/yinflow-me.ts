@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
+import { checkApiKey } from "@calcom/app-store/check-api-key";
+
 // import { getServerSession } from "@calcom/features/auth/lib/getServerSession";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
