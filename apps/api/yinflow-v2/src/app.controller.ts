@@ -54,7 +54,7 @@ export class AppController {
 
     } catch (err) {
       const error = err as Error;
-      throw new InternalServerErrorException(error?.message ?? errMsg);
+      throw new InternalServerErrorException(error?.message);
     }
     throw new InternalServerErrorException("Could not get me.");
   }
