@@ -15,11 +15,6 @@ import {
   X_CAL_SECRET_KEY,
 } from "@calcom/platform-constants";
 
-import { HttpExceptionFilter } from "./filters/http-exception.filter";
-import { PrismaExceptionFilter } from "./filters/prisma-exception.filter";
-import { TRPCExceptionFilter } from "./filters/trpc-exception.filter";
-import { ZodExceptionFilter } from "./filters/zod-exception.filter";
-
 export const bootstrap = (app: NestExpressApplication): NestExpressApplication => {
   app.enableShutdownHooks();
 
@@ -34,8 +29,6 @@ export const bootstrap = (app: NestExpressApplication): NestExpressApplication =
     },
     defaultVersion: VERSION_2024_04_15,
   });
-
-  // app.use(helmet());
 
   app.enableCors({
     origin: "*",
@@ -66,14 +59,6 @@ export const bootstrap = (app: NestExpressApplication): NestExpressApplication =
       },
     })
   );
-
-  // Exception filters, new filters go at the bottom, keep the order
-  app.useGlobalFilters(new PrismaExceptionFilter());
-  app.useGlobalFilters(new ZodExceptionFilter());
-  app.useGlobalFilters(new HttpExceptionFilter());
-  app.useGlobalFilters(new TRPCExceptionFilter());
-
-  // app.use(cookieParser());
 
   return app;
 };
