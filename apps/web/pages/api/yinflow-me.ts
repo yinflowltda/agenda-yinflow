@@ -14,22 +14,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const authenticated = await checkApiKey(apiKey);
 
-  if (!authenticated)
-    return res.status(401).json({
-      status: "error",
-      authenticated,
-      timestamp: new Date().toISOString(),
-      path: "/v2/me",
-      error: {
-        code: "UnauthorizedException",
+  // if (!authenticated)
+  return res.status(401).json({
+    status: "error",
+    authenticated,
+    timestamp: new Date().toISOString(),
+    path: "/v2/me",
+    error: {
+      code: "UnauthorizedException",
+      message: "Invalid Access Token.",
+      details: {
         message: "Invalid Access Token.",
-        details: {
-          message: "Invalid Access Token.",
-          error: "Unauthorized",
-          statusCode: 401,
-        },
+        error: "Unauthorized",
+        statusCode: 401,
       },
-    });
+    },
+  });
 
   const user = await prisma.user.findUnique({ where: { id: parseInt(id, 10) } });
 
