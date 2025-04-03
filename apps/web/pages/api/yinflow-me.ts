@@ -7,8 +7,8 @@ import { checkApiKey } from "@calcom/app-store/check-api-key";
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const prisma = (await import("@calcom/prisma")).default;
 
-  const apiKey = req.headers["apiKey"] as string;
-  const token = req.headers["Authorization"] as string;
+  const apiKey = req.headers.apikey as string;
+  const token = req.headers["x-vercel-sc-headers"] as string;
 
   const id = req.query.id as string;
 
@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // if (!authenticated)
   return res.status(401).json({
     status: "error",
-    authenticated: req.headers,
+    authenticated: { apiKey, token },
     timestamp: new Date().toISOString(),
     path: "/v2/me",
     error: {
