@@ -9,7 +9,7 @@ const getUserIds = async (username?: string, usernames?: string): Promise<string
 
   const prisma = (await import("@calcom/prisma")).default;
 
-  const query = usernamesArray || [username];
+  const query = usernames ? usernamesArray : [username];
 
   const userIds = await prisma.user.findMany({
     where: {
@@ -32,7 +32,7 @@ const getTeamId = async (orgSlug?: string, orgId?: string): Promise<string | nul
 
   const team = await prisma.team.findUnique({
     where: {
-      OR: [{ id: orgId }, { slug: orgSlug }],
+      OR: [{ id: parseInt(orgId || 0, 10) }, { slug: orgSlug }],
     },
     select: {
       id: true,
@@ -96,9 +96,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const query = {
     where: {
-      ...(teamId ? { teamId } : {}),
-      ...(eventSlug ? { slug: eventSlug } : {}),
-      ...(userIds ? { userId: { in: userIds } } : {}),
+      ...(teamId && { teamId }),
+      ...(eventSlug && { slug: eventSlug }),
+      ...(userIds && { userId: { in: userIds } }),
     },
   };
 
