@@ -2,6 +2,27 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 import { checkApiKey } from "@calcom/app-store/check-api-key";
 
+const getUserIds = async (username?: string, usernames?: string[]) => {
+  if (!username && !usernames) return [];
+
+  const prisma = (await import("@calcom/prisma")).default;
+
+  const query = usernames || [username];
+
+  const userIds = await prisma.user.findMany({
+    where: {
+      username: {
+        in: query,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return userIds.map((user) => user.id);
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const prisma = (await import("@calcom/prisma")).default;
 
@@ -9,6 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const token = req.headers["x-vercel-sc-headers"] as string;
 
   const username = req.query.username as string;
+  const usernames = req.query.usernames as string;
   const eventSlug = req.query.eventSlug as string;
   const orgSlug = req.query.orgSlug as string;
   const orgId = req.query.orgId as string;
@@ -31,7 +53,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-  const eventTypes = await prisma.eventType.findMany({ where: { slug: eventSlug } });
+  const userIds = await getUserIds(username, usernames);
+
+  const eventTypes = await prisma.eventType.findMany({
+    where: {
+      userId: {
+        in: userIds,
+      },
+    },
+  });
 
   const formattedEventTypes = eventTypes.map((eventType) => ({
     id: eventType.id,
