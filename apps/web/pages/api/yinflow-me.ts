@@ -17,10 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // if (!authenticated)
   return res.status(401).json({
     status: "error",
-    authenticated: {
-      authenticated,
-      apiKey,
-    },
+    authenticated: req.headers,
     timestamp: new Date().toISOString(),
     path: "/v2/me",
     error: {
