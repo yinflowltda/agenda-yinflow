@@ -7,7 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const prisma = (await import("@calcom/prisma")).default;
 
   const uid = req.query.uid as string;
-  const apiKey = req.headers["apiKey"] as string;
+  const apiKey = req.header.apiKey as string;
 
   const authenticated = await checkApiKey(apiKey);
 
@@ -45,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-  const eventType = await prisma.booking.findUnique({ where: { id: booking.eventTypeId } });
+  const eventType = await prisma.booking.findUnique({ where: { id: booking.eventTypeId || 0 } });
 
   const duration = dayjs(booking.end).diff(dayjs(booking.start), "minutes");
 
@@ -74,11 +74,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       start: booking.start,
       end: booking.end,
       duration,
-      eventTypeId: eventType.id,
-      eventType: {
-        id: eventType.id,
-        slug: eventType.slug,
-      },
+      eventTypeId: eventType ? eventType.id : null,
+      eventType: eventType
+        ? {
+            id: eventType.id,
+            slug: eventType.slug,
+          }
+        : null,
       // meetingUrl: "https://example.com/recurring-meeting",
       location: booking.location,
       absentHost: booking.absentHost,
