@@ -5,7 +5,7 @@ import { checkApiKey } from "@calcom/app-store/check-api-key";
 const getUserIds = async (username?: string, usernames?: string): Promise<string[] | null> => {
   if (!username && !usernames) return null;
 
-  const usernamesArray = usernames.split(",").map((user) => user.trim());
+  const usernamesArray = usernames && usernames.split(",").map((user) => user.trim());
 
   const prisma = (await import("@calcom/prisma")).default;
 
@@ -30,14 +30,16 @@ const getTeamId = async (orgSlug?: string, orgId?: string): Promise<string | nul
 
   const prisma = (await import("@calcom/prisma")).default;
 
-  const team = await prisma.team.findUnique({
-    where: {
-      OR: [{ id: parseInt(orgId || 0, 10) }, { slug: orgSlug }],
-    },
-    select: {
-      id: true,
-    },
-  });
+  const team = orgSlug
+    ? await prisma.team.findUnique({
+        where: {
+          slug: orgSlug,
+        },
+        select: {
+          id: true,
+        },
+      })
+    : { id: orgId };
 
   return team ? team.id : null;
 };
