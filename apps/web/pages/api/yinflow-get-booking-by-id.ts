@@ -7,7 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const prisma = (await import("@calcom/prisma")).default;
 
   const uid = req.query.uid as string;
-  const apiKey = req.header.apiKey as string;
+  const apiKey = req.headers.apiKey as string;
 
   const authenticated = await checkApiKey(apiKey);
 
