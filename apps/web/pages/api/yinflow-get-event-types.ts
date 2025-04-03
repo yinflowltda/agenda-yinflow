@@ -2,12 +2,14 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 import { checkApiKey } from "@calcom/app-store/check-api-key";
 
-const getUserIds = async (username?: string, usernames?: string[]) => {
-  if (!username && !usernames) return [];
+const getUserIds = async (username?: string, usernames?: string): Promise<string[] | null> => {
+  if (!username && !usernames) return null;
+
+  const usernamesArray = usernames.split(",").map((user) => user.trim());
 
   const prisma = (await import("@calcom/prisma")).default;
 
-  const query = usernames || [username];
+  const query = usernamesArray || [username];
 
   const userIds = await prisma.user.findMany({
     where: {
@@ -23,11 +25,27 @@ const getUserIds = async (username?: string, usernames?: string[]) => {
   return userIds.map((user) => user.id);
 };
 
+const getTeamId = async (orgSlug?: string, orgId?: string): Promise<string | null> => {
+  if (!orgSlug && !orgId) return null;
+
+  const prisma = (await import("@calcom/prisma")).default;
+
+  const team = await prisma.team.findUnique({
+    where: {
+      OR: [{ id: orgId }, { slug: orgSlug }],
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return team ? team.id : null;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const prisma = (await import("@calcom/prisma")).default;
 
   const apiKey = req.headers.apikey as string;
-  const token = req.headers["x-vercel-sc-headers"] as string;
 
   const username = req.query.username as string;
   const usernames = req.query.usernames as string;
@@ -54,14 +72,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   const userIds = await getUserIds(username, usernames);
+  const teamId = await getTeamId(orgSlug, orgId);
 
-  const eventTypes = await prisma.eventType.findMany({
-    where: {
-      userId: {
-        in: userIds,
+  if (
+    (eventSlug && !usernames && !username) ||
+    (!eventSlug && !usernames && !username && !orgSlug && !orgId) ||
+    (!userIds && !teamId)
+  )
+    return res.status(400).json({
+      status: "error",
+      timestamp: new Date().toISOString(),
+      path: "/v2/event-types",
+      error: {
+        code: "BadRequestException",
+        message: "Missing required parameters.",
+        details: {
+          message: "Missing required parameters.",
+          error: "Bad Request",
+          statusCode: 400,
+        },
       },
+    });
+
+  const query = {
+    where: {
+      ...(teamId ? { teamId } : {}),
+      ...(eventSlug ? { slug: eventSlug } : {}),
+      ...(userIds ? { userId: { in: userIds } } : {}),
     },
-  });
+  };
+
+  const eventTypes = await prisma.eventType.findMany(query);
 
   const formattedEventTypes = eventTypes.map((eventType) => ({
     id: eventType.id,
