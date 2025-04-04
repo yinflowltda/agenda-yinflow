@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 import { checkApiKey } from "@calcom/app-store/check-api-key";
 
-const getUserIds = async (username?: string, usernames?: string): Promise<string[] | null> => {
+const getUserIds = async (username?: string, usernames?: string): Promise<number[] | null> => {
   if (!username && !usernames) return null;
 
   const usernamesArray = usernames && usernames.split(",").map((user) => user.trim());
@@ -25,18 +25,18 @@ const getUserIds = async (username?: string, usernames?: string): Promise<string
   return userIds.map((user) => user.id);
 };
 
-const getTeamId = async (orgSlug?: string, orgId?: string): Promise<string | null> => {
+const getTeamId = async (orgSlug?: string, orgId?: string): Promise<number | null> => {
   if (!orgSlug && !orgId) return null;
 
   const prisma = (await import("@calcom/prisma")).default;
 
   const team = orgSlug
-    ? await prisma.team.findUnique({
+    ? await prisma.team.findFirst({
         where: {
           slug: orgSlug,
         },
       })
-    : { id: parseInt(orgId, 10) };
+    : { id: parseInt(orgId || "0", 10) };
 
   return team ? team.id : null;
 };
