@@ -35,11 +35,8 @@ const getTeamId = async (orgSlug?: string, orgId?: string): Promise<string | nul
         where: {
           slug: orgSlug,
         },
-        select: {
-          id: true,
-        },
       })
-    : { id: orgId };
+    : { id: parseInt(orgId, 10) };
 
   return team ? team.id : null;
 };
