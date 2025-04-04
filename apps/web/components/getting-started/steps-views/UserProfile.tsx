@@ -67,7 +67,7 @@ const UserProfile = ({ nextStep }: UserProfileProps) => {
 
         const uid = supabaseUserJson[0].uid || generate();
 
-        if (supabaseUserJson[0].uid)
+        if (!supabaseUserJson[0].uid)
           await fetch(`${SUPABASE_BASE_URL}?username=eq.${user?.username}`, {
             method: "PATCH",
             headers: {
