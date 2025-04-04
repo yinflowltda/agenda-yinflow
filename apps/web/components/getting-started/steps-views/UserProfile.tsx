@@ -73,8 +73,8 @@ const UserProfile = ({ nextStep }: UserProfileProps) => {
             headers: {
               "Content-Type": "application/json",
               apikey: SUPABASE_TOKEN,
-              body: JSON.stringify({ uid }),
             },
+            body: JSON.stringify({ uid }),
           });
 
         fetch(
