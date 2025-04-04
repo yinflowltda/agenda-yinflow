@@ -14,6 +14,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!authenticated)
     return res.status(401).json({
       status: "error",
+      apiKey,
+      authenticated,
       timestamp: new Date().toISOString(),
       path: "/v2/bookings/:bookingUid",
       error: {
