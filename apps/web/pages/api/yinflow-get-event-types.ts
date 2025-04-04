@@ -9,7 +9,7 @@ const getUserIds = async (username?: string, usernames?: string): Promise<number
 
   const prisma = (await import("@calcom/prisma")).default;
 
-  const query = usernames ? usernamesArray : [username];
+  const query = (usernames ? usernamesArray : [username]) as string[];
 
   const userIds = await prisma.user.findMany({
     where: {
@@ -132,21 +132,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     isInstantEvent: eventType.isInstantEvent,
     seatsShowAvailabilityCount: eventType.seatsShowAvailabilityCount,
     scheduleId: eventType.scheduleId,
-    // bookingLimitsCount: {},
+    // bookingLimitsCount: eventType.bookingLimitsCount,
     onlyShowFirstAvailableSlot: eventType.onlyShowFirstAvailableSlot,
-    // bookingLimitsDuration: {},
-    // bookingWindow: [
-    //   {
-    //     type: "businessDays",
-    //     value: 5,
-    //     rolling: true,
-    //   },
-    // ],
+    // bookingLimitsDuration: eventType.bookingLimits,
+    // bookingWindow: eventType.bookingWindow,
     // bookerLayouts: {
     //   defaultLayout: "month",
     //   enabledLayouts: ["month"],
     // },
-    // confirmationPolicy: {},
+    // confirmationPolicy: eventType.confirmationPolicy,
     requiresBookerEmailVerification: eventType.requiresBookerEmailVerification,
     hideCalendarNotes: eventType.hideCalendarNotes,
     // color: {
@@ -159,14 +153,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     //   showAvailabilityCount: true,
     // },
     offsetStart: eventType.offsetStart,
-    // customName: "<string>",
+    // customName: eventType.customName,
     // destinationCalendar: {
     //   integration: "<string>",
     //   externalId: "<string>",
     // },
     // useDestinationCalendarEmail: true,
     hideCalendarEventDetails: eventType.hideCalendarEventDetails,
-    ownerId: eventType.owner,
+    // ownerId: eventType.owner,
     // users: ["<string>"],
   }));
 

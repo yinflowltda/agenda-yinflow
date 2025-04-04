@@ -1,9 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
+import { checkApiKey } from "@calcom/app-store/check-api-key";
+import dayjs from "@calcom/dayjs";
+import type { BookingStatus } from "@calcom/prisma/enums";
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const prisma = (await import("@calcom/prisma")).default;
 
-  const status = req.query.status as string;
+  const status = req.query.status as BookingStatus;
   const apiKey = req.headers.apiKey as string;
 
   const authenticated = await checkApiKey(apiKey);
@@ -27,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const bookings = await prisma.booking.findMany({ where: { status } });
 
   const formattedBookings = bookings.map((booking) => {
-    const duration = dayjs(booking.end).diff(dayjs(booking.start), "minutes");
+    const duration = dayjs(booking.endTime).diff(dayjs(booking.startTime), "minutes");
     return {
       id: booking.id,
       uid: booking.uid,
@@ -45,11 +49,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       status: booking.status,
       cancellationReason: booking.cancellationReason,
       // cancelledByEmail: booking.cancelledByEmail,
-      reschedulingReason: booking.reschedulingReason,
+      // reschedulingReason: booking.reschedulingReason,
       // rescheduledByEmail: booking.rescheduledByEmail,
       // rescheduledFromUid: "previous_uid_123",
-      start: booking.start,
-      end: booking.end,
+      start: booking.startTime,
+      end: booking.endTime,
       duration,
       // eventTypeId: eventType ? eventType.id : null,
       // eventType: eventType
@@ -60,12 +64,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       //   : null,
       // meetingUrl: "https://example.com/recurring-meeting",
       location: booking.location,
-      absentHost: booking.absentHost,
+      // absentHost: booking.absentHost,
       createdAt: booking.createdAt,
       updatedAt: booking.updatedAt,
       metadata: booking.metadata,
       rating: booking.rating,
-      attendees: booking.attendees,
+      // attendees: booking.attendees,
       // guests: ["guest1@example.com", "guest2@example.com"],
       // bookingFieldsResponses: {
       //   customField: "customValue",

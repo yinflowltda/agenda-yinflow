@@ -47,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const eventType = await prisma.booking.findUnique({ where: { id: booking.eventTypeId || 0 } });
 
-  const duration = dayjs(booking.end).diff(dayjs(booking.start), "minutes");
+  const duration = dayjs(booking.endTime).diff(dayjs(booking.startTime), "minutes");
 
   return res.status(200).json({
     status: "success",
@@ -68,27 +68,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       status: booking.status,
       cancellationReason: booking.cancellationReason,
       // cancelledByEmail: booking.cancelledByEmail,
-      reschedulingReason: booking.reschedulingReason,
+      // reschedulingReason: booking.reschedulingReason,
       // rescheduledByEmail: booking.rescheduledByEmail,
       // rescheduledFromUid: "previous_uid_123",
-      start: booking.start,
-      end: booking.end,
+      start: booking.startTime,
+      end: booking.endTime,
       duration,
       eventTypeId: eventType ? eventType.id : null,
       eventType: eventType
         ? {
             id: eventType.id,
-            slug: eventType.slug,
+            // slug: eventType.slug,
           }
         : null,
       // meetingUrl: "https://example.com/recurring-meeting",
       location: booking.location,
-      absentHost: booking.absentHost,
+      // absentHost: booking.absentHost,
       createdAt: booking.createdAt,
       updatedAt: booking.updatedAt,
       metadata: booking.metadata,
       rating: booking.rating,
-      attendees: booking.attendees,
+      // attendees: booking.attendees,
       // guests: ["guest1@example.com", "guest2@example.com"],
       // bookingFieldsResponses: {
       //   customField: "customValue",
