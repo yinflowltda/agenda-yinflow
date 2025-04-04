@@ -71,6 +71,7 @@ const UserProfile = ({ nextStep }: UserProfileProps) => {
           await fetch(`${SUPABASE_BASE_URL}?username=eq.${user?.username}`, {
             method: "PATCH",
             headers: {
+              "Content-Type": "application/json",
               apikey: SUPABASE_TOKEN,
               body: JSON.stringify({ uid }),
             },
