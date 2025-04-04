@@ -1,9 +1,9 @@
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { generate } from "short-uuid";
 
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { md } from "@calcom/lib/markdownIt";
-import { useTelemetry } from "@calcom/lib/telemetry";
 import turndown from "@calcom/lib/turndownService";
 import { trpc } from "@calcom/trpc/react";
 import { Button, Editor, ImageUploader, Label, UserAvatar, showToast } from "@calcom/ui";
@@ -17,7 +17,9 @@ type FormData = {
 };
 
 const DIRECTUS_BASE_URL = "https://agenda.yinflow.life/api";
+const SUPABASE_BASE_URL = "https://ogbfbwkftgpdiejqafdq.supabase.co/rest/v1/users";
 const DIRECTUS_TOKEN = process.env.NEXT_PUBLIC_DIRECTUS_TOKEN || "";
+const SUPABASE_TOKEN = process.env.NEXT_PUBLIC_SUPABASE_API_KEY || "";
 
 const UserProfile = ({ nextStep }: UserProfileProps) => {
   const [user] = trpc.viewer.me.useSuspenseQuery();
@@ -30,7 +32,6 @@ const UserProfile = ({ nextStep }: UserProfileProps) => {
   const { data: eventTypes } = trpc.viewer.eventTypes.list.useQuery();
   const [imageSrc, setImageSrc] = useState<string>(user?.avatar || "");
   const createEventType = trpc.viewer.eventTypes.create.useMutation();
-  const telemetry = useTelemetry();
   const [firstRender, setFirstRender] = useState(true);
 
   // Create a separate mutation for avatar updates
@@ -55,10 +56,30 @@ const UserProfile = ({ nextStep }: UserProfileProps) => {
             })
           );
         }
+        const supabaseUser = await fetch(`${SUPABASE_BASE_URL}?select=uid&username=eq.${user?.username}`, {
+          method: "GET",
+          headers: {
+            apikey: SUPABASE_TOKEN,
+          },
+        });
+
+        const supabaseUserJson = await supabaseUser.json();
+
+        const uid = supabaseUserJson[0].uid || generate();
+
+        if (supabaseUserJson[0].uid)
+          await fetch(`${SUPABASE_BASE_URL}?username=eq.${user?.username}`, {
+            method: "PATCH",
+            headers: {
+              apikey: SUPABASE_TOKEN,
+              body: JSON.stringify({ uid }),
+            },
+          });
+
         fetch(
           `${DIRECTUS_BASE_URL}/post-user-data?profilePicture=${user?.avatarUrl}&bio=${getValues(
             "bio"
-          )}&username=${user?.username}&timezone=${user?.timeZone}&email=${user?.email}&calId=${user?.id}`,
+          )}&username=${user?.username}&timezone=${user?.timeZone}&email=${user?.email}&calId=${uid}`,
           {
             method: "GET",
             headers: {
