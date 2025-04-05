@@ -31,9 +31,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const bookings = await prisma.booking.findMany({
     where: {
       status,
-      endTime: {
-        not: null,
-      },
     },
   });
 
