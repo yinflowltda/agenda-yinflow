@@ -11,9 +11,11 @@ import {
 
 import { HttpError } from "@calcom/platform-libraries";
 
-type BookingRequest = Request & {
-  userId?: number;
-};
+interface YinflowRequest extends Omit<Request, "headers"> {
+  headers: {
+    apiKey: string;
+  };
+}
 
 const AGENDA_BASE_URL = "https://agenda.yinflow.life/api";
 
@@ -36,14 +38,14 @@ export class AppController {
   @Get("/v2/event-types")
   @Version(VERSION_NEUTRAL)
   async getEventTypes(
-    @Req() req: Request,
+    @Req() req: YinflowRequest,
     @Query("username") username: string,
     @Query("usernames") usernames: string[],
     @Query("eventSlug") eventSlug: string,
     @Query("orgId") orgId: string,
     @Query("orgSlug") orgSlug: string
   ) {
-    const apiKey = req.headers.get("apiKey") as string;
+    const apiKey = req.headers.apiKey;
 
     let customParams = [];
 
