@@ -47,6 +47,8 @@ export class AppController {
   ) {
     const apiKey = req.headers.apiKey;
 
+    return { apiKey };
+
     let customParams = [];
 
     switch (true) {
