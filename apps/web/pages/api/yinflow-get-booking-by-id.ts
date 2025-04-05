@@ -11,23 +11,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const authenticated = await checkApiKey(apiKey);
 
-  if (!authenticated)
-    return res.status(401).json({
-      status: "error",
-      headers: req.headers.apiKey,
-      authenticated,
-      timestamp: new Date().toISOString(),
-      path: "/v2/bookings/:bookingUid",
-      error: {
-        code: "UnauthorizedException",
-        message: "Invalid Access Token.",
-        details: {
-          message: "Invalid Access Token.",
-          error: "Unauthorized",
-          statusCode: 401,
-        },
-      },
-    });
+  // if (!authenticated)
+  //   return res.status(401).json({
+  //     status: "error",
+  //     headers: req.headers.apiKey,
+  //     authenticated,
+  //     timestamp: new Date().toISOString(),
+  //     path: "/v2/bookings/:bookingUid",
+  //     error: {
+  //       code: "UnauthorizedException",
+  //       message: "Invalid Access Token.",
+  //       details: {
+  //         message: "Invalid Access Token.",
+  //         error: "Unauthorized",
+  //         statusCode: 401,
+  //       },
+  //     },
+  //   });
 
   const booking = await prisma.booking.findUnique({ where: { uid } });
 
