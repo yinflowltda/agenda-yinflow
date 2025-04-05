@@ -31,7 +31,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const bookings = await prisma.booking.findMany({ where: { status } });
 
   const formattedBookings = bookings.map((booking) => {
-    const duration = dayjs(booking.endTime).diff(dayjs(booking.startTime), "minutes");
+    const duration = booking.endTime
+      ? dayjs(booking.endTime).diff(dayjs(booking.startTime), "minutes")
+      : null;
     return {
       id: booking.id,
       uid: booking.uid,
