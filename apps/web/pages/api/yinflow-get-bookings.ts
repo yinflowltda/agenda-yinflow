@@ -28,7 +28,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   //     },
   //   });
 
-  const bookings = await prisma.booking.findMany({ where: { status } });
+  const bookings = await prisma.booking.findMany({
+    where: {
+      status,
+      endTime: {
+        not: null,
+      },
+    },
+  });
 
   const formattedBookings = bookings.map((booking) => {
     const duration = booking.endTime
