@@ -41,12 +41,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const afterUpdateAt = req.query.afterUpdateAt as string;
   const beforeUpdateAt = req.query.beforeUpdateAt as string;
 
-  const sortEnd = req.query.sortEnd as string;
-  const sortStart = req.query.sortStart as string;
-  const sortCreated = req.query.sortCreated as string;
-  const sortUpdated = req.query.sortUpdated as string;
+  const sortEnd = req.query.sortEnd as "asc" | "desc";
+  const sortStart = req.query.sortStart as "asc" | "desc";
+  const sortCreated = req.query.sortCreated as "asc" | "desc";
+  const sortUpdated = req.query.sortUpdated as "asc" | "desc";
   const take = req.query.take as string;
-  const skip = req.query.skio as string;
+  const skip = req.query.skip as string;
 
   const apiKey = req.headers.apiKey as string;
 
@@ -75,22 +75,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     where: {
       ...(status && { status: status.toUpperCase() as BookingStatus }),
       // ...(eventTypeId && { eventTypeId }),
-      ...(formattedTeamIds && { teamId: { in: formattedTeamIds } }),
+      // ...(formattedTeamIds && { teamId: { in: formattedTeamIds } }),
       ...(afterStart && { startTime: { gt: dayjs(afterStart).subtract(THREE_HOURS_IN_MINUTES).toDate() } }),
-      ...(beforeEnd && { endTime: { gte: dayjs(beforeEnd).subtract(THREE_HOURS_IN_MINUTES).toDate() } }),
+      ...(beforeEnd && { endTime: { lt: dayjs(beforeEnd).subtract(THREE_HOURS_IN_MINUTES).toDate() } }),
       ...(afterCreateAt && {
         createdAt: { gt: dayjs(afterCreateAt).subtract(THREE_HOURS_IN_MINUTES).toDate() },
       }),
       ...(beforeCreateAt && {
-        createdAt: { gte: dayjs(beforeCreateAt).subtract(THREE_HOURS_IN_MINUTES).toDate() },
+        createdAt: { lt: dayjs(beforeCreateAt).subtract(THREE_HOURS_IN_MINUTES).toDate() },
       }),
       ...(afterUpdateAt && {
         updatedAt: { gt: dayjs(afterUpdateAt).subtract(THREE_HOURS_IN_MINUTES).toDate() },
       }),
       ...(beforeUpdateAt && {
-        updatedAt: { gte: dayjs(beforeUpdateAt).subtract(THREE_HOURS_IN_MINUTES).toDate() },
+        updatedAt: { lt: dayjs(beforeUpdateAt).subtract(THREE_HOURS_IN_MINUTES).toDate() },
       }),
     },
+    orderBy: {
+      ...(sortEnd && { endTime: sortEnd }),
+      ...(sortStart && { endTime: sortStart }),
+      ...(sortCreated && { endTime: sortCreated }),
+      ...(sortUpdated && { endTime: sortUpdated }),
+    },
+    ...(skip && { skip: parseInt(skip, 10) }),
+    ...(take && { take: parseInt(take, 10) }),
   });
 
   const formattedBookings = bookings.map((booking) => {
