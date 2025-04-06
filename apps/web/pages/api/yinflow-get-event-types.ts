@@ -103,69 +103,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const eventTypes = await prisma.eventType.findMany(query);
 
-  const formattedEventTypes = eventTypes.map((eventType) => ({
-    id: eventType.id,
-    lengthInMinutes: eventType.length,
-    // lengthInMinutesOptions: [15, 30, 60],
-    title: eventType.title,
-    slug: eventType.slug,
-    description: eventType.description,
-    locations: eventType.locations,
-    bookingFields: eventType.locations,
-    disableGuests: eventType.disableGuests,
-    slotInterval: eventType.slotInterval,
-    minimumBookingNotice: eventType.minimumBookingNotice,
-    beforeEventBuffer: eventType.beforeEventBuffer,
-    afterEventBuffer: eventType.afterEventBuffer,
-    // recurrence: {
-    //   interval: 10,
-    //   occurrences: 10,
-    //   frequency: "yearly",
-    // },
-    metadata: eventType.metadata,
-    price: eventType.price,
-    currency: eventType.currency,
-    lockTimeZoneToggleOnBookingPage: eventType.lockTimeZoneToggleOnBookingPage,
-    seatsPerTimeSlot: eventType.seatsPerTimeSlot,
-    forwardParamsSuccessRedirect: eventType.forwardParamsSuccessRedirect,
-    successRedirectUrl: eventType.successRedirectUrl,
-    isInstantEvent: eventType.isInstantEvent,
-    seatsShowAvailabilityCount: eventType.seatsShowAvailabilityCount,
-    scheduleId: eventType.scheduleId,
-    // bookingLimitsCount: eventType.bookingLimitsCount,
-    onlyShowFirstAvailableSlot: eventType.onlyShowFirstAvailableSlot,
-    // bookingLimitsDuration: eventType.bookingLimits,
-    // bookingWindow: eventType.bookingWindow,
-    // bookerLayouts: {
-    //   defaultLayout: "month",
-    //   enabledLayouts: ["month"],
-    // },
-    // confirmationPolicy: eventType.confirmationPolicy,
-    requiresBookerEmailVerification: eventType.requiresBookerEmailVerification,
-    hideCalendarNotes: eventType.hideCalendarNotes,
-    // color: {
-    //   lightThemeHex: "#292929",
-    //   darkThemeHex: "#fafafa",
-    // },
-    // seats: {
-    //   seatsPerTimeSlot: 4,
-    //   showAttendeeInfo: true,
-    //   showAvailabilityCount: true,
-    // },
-    offsetStart: eventType.offsetStart,
-    // customName: eventType.customName,
-    // destinationCalendar: {
-    //   integration: "<string>",
-    //   externalId: "<string>",
-    // },
-    // useDestinationCalendarEmail: true,
-    hideCalendarEventDetails: eventType.hideCalendarEventDetails,
-    // ownerId: eventType.owner,
-    // users: ["<string>"],
-  }));
-
   return res.status(200).json({
     status: "success",
-    data: formattedEventTypes,
+    data: eventTypes,
   });
 }

@@ -101,58 +101,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     ...(take && { take: parseInt(take, 10) }),
   });
 
-  const formattedBookings = bookings.map((booking) => {
-    const duration = booking.endTime
-      ? dayjs(booking.endTime).diff(dayjs(booking.startTime), "minutes")
-      : null;
-    return {
-      id: booking.id,
-      uid: booking.uid,
-      title: booking.title,
-      description: booking.description || null,
-      // hosts: [
-      //   {
-      //     id: 1,
-      //     name: "Jane Doe",
-      //     email: "jane100@example.com",
-      //     username: "jane100",
-      //     timeZone: "America/Los_Angeles",
-      //   },
-      // ],
-      status: booking.status,
-      cancellationReason: booking.cancellationReason,
-      // cancelledByEmail: booking.cancelledByEmail,
-      // reschedulingReason: booking.reschedulingReason,
-      // rescheduledByEmail: booking.rescheduledByEmail,
-      // rescheduledFromUid: "previous_uid_123",
-      start: booking.startTime,
-      end: booking.endTime,
-      duration,
-      // eventTypeId: eventType ? eventType.id : null,
-      // eventType: eventType
-      //   ? {
-      //       id: eventType.id,
-      //       slug: eventType.slug,
-      //     }
-      //   : null,
-      // meetingUrl: "https://example.com/recurring-meeting",
-      location: booking.location,
-      // absentHost: booking.absentHost,
-      createdAt: booking.createdAt,
-      updatedAt: booking.updatedAt,
-      metadata: booking.metadata,
-      rating: booking.rating,
-      // attendees: booking.attendees,
-      // guests: ["guest1@example.com", "guest2@example.com"],
-      // bookingFieldsResponses: {
-      //   customField: "customValue",
-      // },
-    };
-  });
-
   return res.status(200).json({
     status: "success",
-    data: formattedBookings,
+    data: bookings,
     error: {},
   });
 }
