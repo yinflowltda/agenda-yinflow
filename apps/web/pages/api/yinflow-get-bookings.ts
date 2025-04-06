@@ -4,10 +4,50 @@ import { checkApiKey } from "@calcom/app-store/check-api-key";
 import dayjs from "@calcom/dayjs";
 import type { BookingStatus } from "@calcom/prisma/enums";
 
+const THREE_HOURS_IN_MINUTES = 3 * 60;
+
+const getTeamIds = (teamId?: string, teamIds?: string): number[] | null => {
+  const teamIdsArray = teamIds && teamIds.split(",").map((team) => team.trim());
+
+  if (teamIdsArray) return teamIdsArray.map((team) => parseInt(team, 10));
+  if (teamId) return [parseInt(teamId, 10)];
+
+  return null;
+};
+
+const getEventTypeIds = (eventTypeId?: string, eventTypeIds?: string): number[] | null => {
+  const eventTypeIdsArray = eventTypeIds && eventTypeIds.split(",").map((eventType) => eventType.trim());
+
+  if (eventTypeIdsArray) return eventTypeIdsArray.map((eventType) => parseInt(eventType, 10));
+  if (eventTypeId) return [parseInt(eventTypeId, 10)];
+
+  return null;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const prisma = (await import("@calcom/prisma")).default;
 
-  const status = req.query.status as BookingStatus;
+  const status = req.query.status as string;
+  const attendeeEmail = req.query.attendeeEmail as string;
+  const attendeeName = req.query.attendeeName as string;
+  const eventTypeId = req.query.eventTypeId as string;
+  const eventTypeIds = req.query.eventTypeIds as string;
+  const teamId = req.query.teamId as string;
+  const teamIds = req.query.teamIds as string;
+  const afterStart = req.query.afterStart as string;
+  const beforeEnd = req.query.beforeEnd as string;
+  const afterCreateAt = req.query.afterCreateAt as string;
+  const beforeCreateAt = req.query.beforeCreateAt as string;
+  const afterUpdateAt = req.query.afterUpdateAt as string;
+  const beforeUpdateAt = req.query.beforeUpdateAt as string;
+
+  const sortEnd = req.query.sortEnd as string;
+  const sortStart = req.query.sortStart as string;
+  const sortCreated = req.query.sortCreated as string;
+  const sortUpdated = req.query.sortUpdated as string;
+  const take = req.query.take as string;
+  const skip = req.query.skio as string;
+
   const apiKey = req.headers.apiKey as string;
 
   const authenticated = await checkApiKey(apiKey);
@@ -28,9 +68,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   //     },
   //   });
 
+  const formattedTeamIds = getTeamIds(teamId, teamIds);
+  const formattedEventTypeIds = getEventTypeIds(eventTypeId, eventTypeIds);
+
   const bookings = await prisma.booking.findMany({
     where: {
-      status,
+      ...(status && { status: status.toUpperCase() as BookingStatus }),
+      // ...(eventTypeId && { eventTypeId }),
+      ...(formattedTeamIds && { teamId: { in: formattedTeamIds } }),
+      ...(afterStart && { startTime: { gt: dayjs(afterStart).subtract(THREE_HOURS_IN_MINUTES).toDate() } }),
+      ...(beforeEnd && { endTime: { gte: dayjs(beforeEnd).subtract(THREE_HOURS_IN_MINUTES).toDate() } }),
+      ...(afterCreateAt && {
+        createdAt: { gt: dayjs(afterCreateAt).subtract(THREE_HOURS_IN_MINUTES).toDate() },
+      }),
+      ...(beforeCreateAt && {
+        createdAt: { gte: dayjs(beforeCreateAt).subtract(THREE_HOURS_IN_MINUTES).toDate() },
+      }),
+      ...(afterUpdateAt && {
+        updatedAt: { gt: dayjs(afterUpdateAt).subtract(THREE_HOURS_IN_MINUTES).toDate() },
+      }),
+      ...(beforeUpdateAt && {
+        updatedAt: { gte: dayjs(beforeUpdateAt).subtract(THREE_HOURS_IN_MINUTES).toDate() },
+      }),
     },
   });
 
