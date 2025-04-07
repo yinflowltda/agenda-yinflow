@@ -29,16 +29,35 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
       },
     });
 
-  const updatedBooking = await prisma.booking.update({
-    where: {
-      uid: uid,
-    },
-    data: {
-      attendees: JSON.parse(attendees),
-    },
-  });
+  try {
+    const updatedBooking = await prisma.booking.findUnique({
+      where: {
+        uid: uid,
+      },
+    });
 
-  if (!updatedBooking)
+    if (!updatedBooking)
+      return res.status(404).json({
+        status: "error",
+        timestamp: new Date().toISOString(),
+        path: "/v2/bookings/:bookingUid/mark-absent",
+        error: {
+          code: "NotFoundException",
+          message: "Booking not found.",
+          details: {
+            message: "Booking not found.",
+            error: "Not Found",
+            statusCode: 404,
+          },
+        },
+      });
+
+    return res.status(200).json({
+      status: "success",
+      data: updatedBooking,
+      error: {},
+    });
+  } catch {
     return res.status(404).json({
       status: "error",
       timestamp: new Date().toISOString(),
@@ -53,12 +72,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
         },
       },
     });
-
-  return res.status(200).json({
-    status: "success",
-    data: updatedBooking,
-    error: {},
-  });
+  }
 }
 
 export default defaultHandler({
