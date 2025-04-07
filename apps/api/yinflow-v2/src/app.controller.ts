@@ -36,6 +36,118 @@ export class AppController {
     });
   }
 
+  @Get("/v2/bookings/:uid")
+  @Version(VERSION_NEUTRAL)
+  async getBookingById(@Req() req: YinflowRequest, @Param("uid") uid: string) {
+    const apiKey = req.headers.apiKey;
+
+    try {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-booking-by-id?uid=${uid}`, {
+        headers: {
+          apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
+        },
+        method: "GET",
+      });
+
+      if (!response.ok) throw new HttpException(response.statusText, response.status);
+
+      return await response.json();
+    } catch (err) {
+      const error = err as Error;
+      throw new InternalServerErrorException(error?.message);
+    }
+  }
+
+  @Get("/v2/bookings")
+  @Version(VERSION_NEUTRAL)
+  async getBookings(
+    @Req() req: YinflowRequest,
+    @Query("status") status: string,
+    @Query("attendeeEmail") attendeeEmail: string[],
+    @Query("attendeeName") attendeeName: string,
+    @Query("eventTypeId") eventTypeId: string,
+    @Query("eventTypeIds") eventTypeIds: string,
+    @Query("teamId") teamId: string,
+    @Query("teamIds") teamIds: string[],
+    @Query("afterStart") afterStart: string,
+    @Query("beforeEnd") beforeEnd: string,
+    @Query("afterCreateAt") afterCreateAt: string,
+    @Query("beforeCreateAt") beforeCreateAt: string,
+    @Query("afterUpdateAt") afterUpdateAt: string,
+    @Query("beforeUpdateAt") beforeUpdateAt: string,
+    @Query("sortEnd") sortEnd: string,
+    @Query("sortStart") sortStart: string,
+    @Query("sortCreated") sortCreated: string,
+    @Query("sortUpdated") sortUpdated: string,
+    @Query("take") take: string,
+    @Query("skip") skip: string
+  ) {
+    const apiKey = req.headers.apiKey;
+
+    let customParams = [];
+
+    switch (true) {
+      case !!status:
+        customParams.push(`status=${status}`);
+      case !!attendeeEmail:
+        customParams.push(`attendeeEmail=${attendeeEmail}`);
+      case !!attendeeName:
+        customParams.push(`attendeeName=${attendeeName}`);
+      case !!eventTypeId:
+        customParams.push(`eventTypeId=${eventTypeId}`);
+      case !!eventTypeIds:
+        customParams.push(`eventTypeIds=${eventTypeIds}`);
+      case !!teamId:
+        customParams.push(`teamId=${teamId}`);
+      case !!teamIds:
+        customParams.push(`teamIds=${teamIds}`);
+      case !!afterStart:
+        customParams.push(`afterStart=${afterStart}`);
+      case !!beforeEnd:
+        customParams.push(`beforeEnd=${beforeEnd}`);
+      case !!afterUpdateAt:
+        customParams.push(`afterUpdateAt=${afterUpdateAt}`);
+      case !!beforeUpdateAt:
+        customParams.push(`beforeUpdateAt=${beforeUpdateAt}`);
+      case !!beforeCreateAt:
+        customParams.push(`beforeCreateAt=${beforeCreateAt}`);
+      case !!afterCreateAt:
+        customParams.push(`afterCreateAt=${afterCreateAt}`);
+      case !!beforeUpdateAt:
+        customParams.push(`beforeUpdateAt=${beforeUpdateAt}`);
+      case !!sortEnd:
+        customParams.push(`sortEnd=${sortEnd}`);
+      case !!sortStart:
+        customParams.push(`sortStart=${sortStart}`);
+      case !!sortCreated:
+        customParams.push(`sortCreated=${sortCreated}`);
+      case !!sortUpdated:
+        customParams.push(`sortUpdated=${sortUpdated}`);
+      case !!take:
+        customParams.push(`take=${take}`);
+      case !!skip:
+        customParams.push(`skip=${skip}`);
+    }
+
+    const params = customParams.length ? `?${customParams.join("&")}` : "";
+
+    try {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-bookings?${params}`, {
+        headers: {
+          apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
+        },
+        method: "GET",
+      });
+
+      if (!response.ok) throw new HttpException(response.statusText, response.status);
+
+      return await response.json();
+    } catch (err) {
+      const error = err as Error;
+      throw new InternalServerErrorException(error?.message);
+    }
+  }
+
   @Get("/v2/event-types")
   @Version(VERSION_NEUTRAL)
   async getEventTypes(
@@ -47,8 +159,6 @@ export class AppController {
     @Query("orgSlug") orgSlug: string
   ) {
     const apiKey = req.headers.apiKey;
-
-    return { apiKey: req.headers };
 
     let customParams = [];
 
@@ -70,7 +180,7 @@ export class AppController {
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-event-types${params}`, {
         headers: {
-          apiKey,
+          apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
         },
         method: "GET",
       });
@@ -88,7 +198,7 @@ export class AppController {
   @Version(VERSION_NEUTRAL)
   async getMe(@Req() req: Request, @Param("id") id: string) {
     try {
-      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-me?id=${60}`, {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-me?id=${id}`, {
         headers: {
           apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
         },
