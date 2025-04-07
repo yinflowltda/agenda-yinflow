@@ -3,6 +3,7 @@ import {
   Get,
   HttpException,
   InternalServerErrorException,
+  Param,
   Query,
   Req,
   Version,
@@ -47,7 +48,7 @@ export class AppController {
   ) {
     const apiKey = req.headers.apiKey;
 
-    return { apiKey };
+    return { apiKey: req.headers };
 
     let customParams = [];
 
@@ -83,31 +84,25 @@ export class AppController {
     }
   }
 
-  // @Get("/v2/me")
-  // @Version(VERSION_NEUTRAL)
-  // async getMe(
-  //   @Req() req: Request,
-  //   @Query('id') id: string
-  // ) {
-  //   const idParam = id ? `?id=${id}` : "";
+  @Get("/v2/me/:id")
+  @Version(VERSION_NEUTRAL)
+  async getMe(@Req() req: Request, @Param("id") id: string) {
+    try {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-me?id=${60}`, {
+        headers: {
+          apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
+        },
+        method: "GET",
+      });
 
-  //   try {
-  //     const response = await fetch(`${AGENDA_BASE_URL}/yinflow-me${idParam}`, {
-  //       headers:{
-  //         apiKey: req.headers.apikey as string || "",
-  //       }
-  //       method: "GET",
-  //     });
+      if (!response.ok) throw new HttpException(response.statusText, response.status);
 
-  //     if (!response.ok) throw new HttpException(response.statusText, response.status);
-
-  //     return await response.json();
-  //   } catch (err) {
-  //     const error = err as Error;
-  //     throw new InternalServerErrorException(error?.message);
-  //   }
-  //   throw new InternalServerErrorException("Could not get me.");
-  // }
+      return await response.json();
+    } catch (err) {
+      const error = err as Error;
+      throw new InternalServerErrorException(error?.message);
+    }
+  }
 
   // @Post("/v2/bookings")
   // async createBooking(
