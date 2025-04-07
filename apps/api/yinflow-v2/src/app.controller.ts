@@ -19,10 +19,12 @@ interface YinflowRequest extends Omit<Request, "headers"> {
   };
 }
 
-interface YinflowCancelBookingRequest extends Omit<YinflowRequest, "body"> {
-  body: {
-    cancellationReason: string;
-  };
+interface YinflowCancelBookingRequest {
+  cancellationReason: string;
+}
+
+interface YinflowRescheduleBookingRequest {
+  start: string;
 }
 
 const AGENDA_BASE_URL = "https://agenda.yinflow.life/api";
@@ -45,10 +47,14 @@ export class AppController {
 
   @Post("/v2/bookings/:uid/cancel")
   @Version(VERSION_NEUTRAL)
-  async cancelBookingById(@Req() req: YinflowCancelBookingRequest, @Param("uid") uid: string) {
+  async cancelBookingById(
+    @Req() req: YinflowRequest,
+    @Body() body: YinflowCancelBookingRequest,
+    @Param("uid") uid: string
+  ) {
     const apiKey = req.headers.apiKey;
 
-    const cancelationReason = req.body.cancellationReason;
+    const cancelationReason = body.cancellationReason;
 
     const params = cancelationReason ? `&cancellationReason=${cancelationReason}` : "";
 
@@ -57,7 +63,37 @@ export class AppController {
         headers: {
           apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
         },
-        method: "GET",
+        method: "POST",
+      });
+
+      if (!response.ok) throw new HttpException(response.statusText, response.status);
+
+      return await response.json();
+    } catch (err) {
+      const error = err as Error;
+      throw new InternalServerErrorException(error?.message);
+    }
+  }
+
+  @Post("/v2/bookings/:uid/reschedule")
+  @Version(VERSION_NEUTRAL)
+  async cancelBookingById(
+    @Req() req: YinflowRequest,
+    @Body() body: YinflowRescheduleBookingRequest,
+    @Param("uid") uid: string
+  ) {
+    const apiKey = req.headers.apiKey;
+
+    const start = body.start;
+
+    const params = start ? `&start=${start}` : "";
+
+    try {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-booking-by-id?uid=${uid}${params}`, {
+        headers: {
+          apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
+        },
+        method: "POST",
       });
 
       if (!response.ok) throw new HttpException(response.statusText, response.status);
