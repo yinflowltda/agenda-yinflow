@@ -27,6 +27,8 @@ dayjs.extend(timezone);
 
 const transformGetSlotsQuery = async (query: GetSlotsInput_2024_09_04) => {
   const eventType = await getEventType(query);
+
+  return eventType;
   if (!eventType) {
     throw new Error(`Event Type not found`);
   }
