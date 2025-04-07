@@ -4,6 +4,7 @@ import {
   HttpException,
   InternalServerErrorException,
   Param,
+  Post,
   Query,
   Req,
   Version,
@@ -15,6 +16,12 @@ import { HttpError } from "@calcom/platform-libraries";
 interface YinflowRequest extends Omit<Request, "headers"> {
   headers: {
     apiKey: string;
+  };
+}
+
+interface YinflowCancelBookingRequest extends Omit<YinflowRequest, "body"> {
+  body: {
+    cancellationReason: string;
   };
 }
 
@@ -34,6 +41,32 @@ export class AppController {
     return JSON.stringify({
       message: "Welcome to Cal.com API V2 - docs are at https://developer.cal.com/api",
     });
+  }
+
+  @Post("/v2/bookings/:uid/cancel")
+  @Version(VERSION_NEUTRAL)
+  async cancelBookingById(@Req() req: YinflowCancelBookingRequest, @Param("uid") uid: string) {
+    const apiKey = req.headers.apiKey;
+
+    const cancelationReason = req.body.cancellationReason;
+
+    const params = cancelationReason ? `&cancellationReason=${cancelationReason}` : "";
+
+    try {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-booking-by-id?uid=${uid}${params}`, {
+        headers: {
+          apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
+        },
+        method: "GET",
+      });
+
+      if (!response.ok) throw new HttpException(response.statusText, response.status);
+
+      return await response.json();
+    } catch (err) {
+      const error = err as Error;
+      throw new InternalServerErrorException(error?.message);
+    }
   }
 
   @Get("/v2/bookings/:uid")
@@ -132,7 +165,7 @@ export class AppController {
     const params = customParams.length ? `?${customParams.join("&")}` : "";
 
     try {
-      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-bookings?${params}`, {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-bookings${params}`, {
         headers: {
           apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
         },
