@@ -346,49 +346,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     timeZone,
   };
 
-  try {
-    const queryTransformed = await transformGetSlotsQuery(query);
+  const queryTransformed = await transformGetSlotsQuery(query);
 
-    return res.status(200).json({
-      status: "success",
-      data: queryTransformed,
-      error: {},
-    });
+  return res.status(200).json({
+    status: "success",
+    data: queryTransformed,
+    error: {},
+  });
 
-    const availableSlots: GetAvailableSlots = await getAvailableSlots({
-      input: {
-        ...queryTransformed,
-      },
-      ctx: {},
-    });
+  const availableSlots: GetAvailableSlots = await getAvailableSlots({
+    input: {
+      ...queryTransformed,
+    },
+    ctx: {},
+  });
 
-    const formatted = await getFormattedAvailableSlots(
-      availableSlots,
-      queryTransformed.eventTypeId,
-      queryTransformed.duration,
-      slotFormat,
-      queryTransformed.timeZone
-    );
+  const formatted = await getFormattedAvailableSlots(
+    availableSlots,
+    queryTransformed.eventTypeId,
+    queryTransformed.duration,
+    slotFormat,
+    queryTransformed.timeZone
+  );
 
-    return res.status(200).json({
-      status: "success",
-      data: formatted,
-      error: {},
-    });
-  } catch {
-    return res.status(404).json({
-      status: "error",
-      timestamp: new Date().toISOString(),
-      path: "/v2/slots",
-      error: {
-        code: "NotFoundException",
-        message: "Slots not found.",
-        details: {
-          message: "Slots not found.",
-          error: "Not Found",
-          statusCode: 404,
-        },
-      },
-    });
-  }
+  return res.status(200).json({
+    status: "success",
+    data: formatted,
+    error: {},
+  });
 }
