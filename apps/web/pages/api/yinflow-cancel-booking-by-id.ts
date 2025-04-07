@@ -6,7 +6,7 @@ import { defaultHandler, defaultResponder } from "@calcom/lib/server";
 async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const prisma = (await import("@calcom/prisma")).default;
 
-  const cancellationReason = req.query.cancellationReason as string;
+  const cancellationReason = (req.query.cancellationReason || "") as string;
   const uid = req.query.uid as string;
 
   const apiKey = req.headers.apikey as string;

@@ -6,7 +6,7 @@ import { defaultHandler, defaultResponder } from "@calcom/lib/server";
 async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const prisma = (await import("@calcom/prisma")).default;
 
-  const attendees = req.query.attendees as any;
+  const attendees = req.query.attendees as string;
   const uid = req.query.uid as string;
 
   const apiKey = req.headers.apikey as string;
@@ -34,7 +34,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
       uid: uid,
     },
     data: {
-      attendees: attendees,
+      attendees: JSON.parse(attendees),
     },
   });
 

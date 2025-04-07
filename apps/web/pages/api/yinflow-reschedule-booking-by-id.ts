@@ -4,9 +4,6 @@ import { checkApiKey } from "@calcom/app-store/check-api-key";
 import dayjs from "@calcom/dayjs";
 import { defaultResponder, defaultHandler } from "@calcom/lib/server";
 
-const THREE_HOURS_IN_MINUTES = 3 * 60;
-const ONE_HUNDRED_AND_THIRTY_MINUTES_IN_MINUTES = 130;
-
 async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const prisma = (await import("@calcom/prisma")).default;
 
@@ -38,8 +35,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
       uid: uid,
     },
     data: {
-      startTime: dayjs(start).subtract(THREE_HOURS_IN_MINUTES, "minutes").toDate(),
-      endTime: dayjs(start).subtract(ONE_HUNDRED_AND_THIRTY_MINUTES_IN_MINUTES, "minutes").toDate(),
+      startTime: dayjs(start).toDate(),
+      endTime: dayjs(start).toDate(),
     },
   });
 
