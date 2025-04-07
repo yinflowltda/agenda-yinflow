@@ -63,7 +63,7 @@ export class AppController {
   async getBookings(
     @Req() req: YinflowRequest,
     @Query("status") status: string,
-    @Query("attendeeEmail") attendeeEmail: string[],
+    @Query("attendeeEmail") attendeeEmail: string,
     @Query("attendeeName") attendeeName: string,
     @Query("eventTypeId") eventTypeId: string,
     @Query("eventTypeIds") eventTypeIds: string,
@@ -153,7 +153,7 @@ export class AppController {
   async getEventTypes(
     @Req() req: YinflowRequest,
     @Query("username") username: string,
-    @Query("usernames") usernames: string[],
+    @Query("usernames") usernames: string,
     @Query("eventSlug") eventSlug: string,
     @Query("orgId") orgId: string,
     @Query("orgSlug") orgSlug: string
