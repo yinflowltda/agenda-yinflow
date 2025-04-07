@@ -347,6 +347,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const queryTransformed = await transformGetSlotsQuery(query);
 
+    return res.status(200).json({
+      status: "success",
+      data: queryTransformed,
+      error: {},
+    });
+
     const availableSlots: GetAvailableSlots = await getAvailableSlots({
       input: {
         ...queryTransformed,
@@ -374,9 +380,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       path: "/v2/slots",
       error: {
         code: "NotFoundException",
-        message: "Booking not found.",
+        message: "Slots not found.",
         details: {
-          message: "Booking not found.",
+          message: "Slots not found.",
           error: "Not Found",
           statusCode: 404,
         },
