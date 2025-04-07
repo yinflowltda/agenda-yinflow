@@ -5,7 +5,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { checkApiKey } from "@calcom/app-store/check-api-key";
 import dayjs from "@calcom/dayjs";
 import { dynamicEvent } from "@calcom/lib/defaultEvents";
-import { defaultHandler, defaultResponder } from "@calcom/lib/server";
 import { SlotFormat } from "@calcom/platform-enums";
 import type {
   GetSlotsInput_2024_09_04,
@@ -284,7 +283,7 @@ const getFormattedAvailableSlots = async (
   return getAvailableRangeSlots(availableSlots, eventTypeId, timeZone, duration);
 };
 
-async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
+export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const start = req.query.start as string;
   const end = req.query.end as string;
   const organizationSlug = req.query.organizationSlug as string;
@@ -385,7 +384,3 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
     });
   }
 }
-
-export default defaultHandler({
-  POST: Promise.resolve({ default: defaultResponder(handler) }),
-});
