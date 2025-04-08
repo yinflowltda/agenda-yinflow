@@ -28,7 +28,6 @@ dayjs.extend(timezone);
 const transformGetSlotsQuery = async (query: GetSlotsInput_2024_09_04) => {
   const eventType = await getEventType(query);
 
-  return eventType;
   if (!eventType) {
     throw new Error(`Event Type not found`);
   }
@@ -59,33 +58,37 @@ const transformGetSlotsQuery = async (query: GetSlotsInput_2024_09_04) => {
 const getEventType = async (input: GetSlotsInput_2024_09_04) => {
   const prisma = (await import("@calcom/prisma")).default;
 
-  if ("eventTypeId" in input) {
-    return await prisma.eventType.findUnique({
-      where: {
-        id: input.eventTypeId,
-      },
-    });
-  }
-
-  if ("eventTypeSlug" in input) {
-    const user = await prisma.user.findFirst({
-      where: {
-        username: input.username,
-      },
-    });
-
-    if (!user) {
-      throw new Error(`User with username ${input.username} not found`);
+  try {
+    if ("eventTypeId" in input) {
+      return await prisma.eventType.findUnique({
+        where: {
+          id: parseInt(input.eventTypeId as unknown as string, 10),
+        },
+      });
     }
-    return await prisma.eventType.findFirst({
-      where: {
-        slug: input.eventTypeSlug,
-        userId: user.id,
-      },
-    });
-  }
 
-  return input.duration ? { ...dynamicEvent, length: input.duration } : dynamicEvent;
+    if ("eventTypeSlug" in input) {
+      const user = await prisma.user.findFirst({
+        where: {
+          username: input.username,
+        },
+      });
+
+      if (!user) {
+        throw new Error(`User with username ${input.username} not found`);
+      }
+      return await prisma.eventType.findFirst({
+        where: {
+          slug: input.eventTypeSlug,
+          userId: user.id,
+        },
+      });
+    }
+
+    return input.duration ? { ...dynamicEvent, length: input.duration } : dynamicEvent;
+  } catch (error) {
+    throw new Error(`Error fetching event type: ${error}`);
+  }
 };
 
 const adjustEndTime = (endTime: string) => {
