@@ -33,7 +33,7 @@ const transformGetSlotsQuery = async (query: GetSlotsInput_2024_09_04) => {
   }
   const isTeamEvent = !!eventType?.teamId;
 
-  const startTime = query.start;
+  const startTime = dayjs(query.start).toISOString();
   const endTime = adjustEndTime(query.end);
   const duration = query.duration;
   const eventTypeId = eventType.id;
@@ -351,17 +351,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const queryTransformed = await transformGetSlotsQuery(query);
 
-  return res.status(200).json({
-    status: "success",
-    data: queryTransformed,
-    error: {},
-  });
-
   const availableSlots: GetAvailableSlots = await getAvailableSlots({
     input: {
       ...queryTransformed,
     },
     ctx: {},
+  });
+
+  return res.status(200).json({
+    status: "success",
+    data: availableSlots,
+    error: {},
   });
 
   const formatted = await getFormattedAvailableSlots(
