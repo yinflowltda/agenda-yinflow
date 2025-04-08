@@ -265,15 +265,13 @@ export class AppController {
   @Get("/v2/event-types")
   @Version(VERSION_NEUTRAL)
   async getEventTypes(
-    @Req() req: YinflowRequest,
+    @Headers("Authorization") authorization: string,
     @Query("username") username: string,
     @Query("usernames") usernames: string,
     @Query("eventSlug") eventSlug: string,
     @Query("orgId") orgId: string,
     @Query("orgSlug") orgSlug: string
   ) {
-    const apiKey = req.headers.apiKey;
-
     let customParams = [];
 
     switch (true) {
@@ -294,7 +292,60 @@ export class AppController {
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-event-types${params}`, {
         headers: {
-          apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
+          apiKey: authorization,
+        },
+        method: "GET",
+      });
+
+      if (!response.ok) throw new HttpException(response.statusText, response.status);
+
+      return await response.json();
+    } catch (err) {
+      const error = err as Error;
+      throw new InternalServerErrorException(error?.message);
+    }
+  }
+
+  @Get("/v2/slots")
+  @Version(VERSION_NEUTRAL)
+  async getSlots(
+    @Headers("Authorization") authorization: string,
+    @Query("start") start: string,
+    @Query("end") end: string,
+    @Query("duration") duration: string,
+    @Query("eventTypeId") eventTypeId: string,
+    @Query("eventTypeSlug") eventTypeSlug: string,
+    @Query("usernameList") usernameList: string,
+    @Query("timeZone") timeZone: string,
+    @Query("orgSlug") orgSlug: string
+  ) {
+    let customParams = [];
+
+    switch (true) {
+      case !!start:
+        customParams.push(`start=${start}`);
+      case !!end:
+        customParams.push(`end=${end}`);
+      case !!duration:
+        customParams.push(`duration=${duration}`);
+      case !!eventTypeId:
+        customParams.push(`eventTypeId=${eventTypeId}`);
+      case !!eventTypeSlug:
+        customParams.push(`eventTypeSlug=${eventTypeSlug}`);
+      case !!usernameList:
+        customParams.push(`usernameList=${usernameList}`);
+      case !!timeZone:
+        customParams.push(`timeZone=${timeZone}`);
+      case !!orgSlug:
+        customParams.push(`orgSlug=${orgSlug}`);
+    }
+
+    const params = customParams.length ? `?${customParams.join("&")}` : "";
+
+    try {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-slots${params}`, {
+        headers: {
+          apiKey: authorization,
         },
         method: "GET",
       });
