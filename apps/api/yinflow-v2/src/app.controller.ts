@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpException,
@@ -77,7 +78,7 @@ export class AppController {
 
   @Post("/v2/bookings/:uid/reschedule")
   @Version(VERSION_NEUTRAL)
-  async cancelBookingById(
+  async rescheduleBookingById(
     @Req() req: YinflowRequest,
     @Body() body: YinflowRescheduleBookingRequest,
     @Param("uid") uid: string
