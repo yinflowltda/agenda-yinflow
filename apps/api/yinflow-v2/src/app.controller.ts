@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   HttpException,
   InternalServerErrorException,
   Param,
@@ -11,6 +12,7 @@ import {
   Version,
   VERSION_NEUTRAL,
 } from "@nestjs/common";
+import { IsOptional, IsString } from "class-validator";
 
 import { HttpError } from "@calcom/platform-libraries";
 
@@ -24,8 +26,19 @@ interface YinflowCancelBookingRequest {
   cancellationReason: string;
 }
 
-interface YinflowRescheduleBookingRequest {
-  start: string;
+class YinflowCancelBookingBody {
+  @IsString()
+  @IsOptional()
+  cancellationReason?: string;
+}
+
+class YinflowRescheduleBookingBody {
+  @IsString()
+  start!: string;
+
+  @IsString()
+  @IsOptional()
+  reschedulingReason?: string;
 }
 
 const AGENDA_BASE_URL = "https://agenda.yinflow.life/api";
@@ -50,14 +63,14 @@ export class AppController {
   @Version(VERSION_NEUTRAL)
   async cancelBookingById(
     @Req() req: YinflowRequest,
-    @Body() body: YinflowCancelBookingRequest,
+    @Body() body: YinflowCancelBookingBody,
     @Param("uid") uid: string
   ) {
     const apiKey = req.headers.apiKey;
 
-    const cancelationReason = body.cancellationReason;
+    const { cancellationReason } = body;
 
-    const params = cancelationReason ? `&cancellationReason=${cancelationReason}` : "";
+    const params = cancellationReason ? `&cancellationReason=${cancellationReason}` : "";
 
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-booking-by-id?uid=${uid}${params}`, {
@@ -80,12 +93,12 @@ export class AppController {
   @Version(VERSION_NEUTRAL)
   async rescheduleBookingById(
     @Req() req: YinflowRequest,
-    @Body() body: YinflowRescheduleBookingRequest,
+    @Body() body: YinflowRescheduleBookingBody,
     @Param("uid") uid: string
   ) {
     const apiKey = req.headers.apiKey;
 
-    const start = body.start;
+    const { start } = body;
 
     const params = start ? `&start=${start}` : "";
 
@@ -266,11 +279,11 @@ export class AppController {
 
   @Get("/v2/me/:id")
   @Version(VERSION_NEUTRAL)
-  async getMe(@Req() req: Request, @Param("id") id: string) {
+  async getMe(@Req() req: Request, @Headers() apiKey: string, @Param("id") id: string) {
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-me?id=${id}`, {
         headers: {
-          apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
+          apiKey,
         },
         method: "GET",
       });
