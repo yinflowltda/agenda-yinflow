@@ -62,20 +62,20 @@ export class AppController {
   @Post("/v2/bookings/:uid/cancel")
   @Version(VERSION_NEUTRAL)
   async cancelBookingById(
-    @Req() req: YinflowRequest,
+    @Headers("apiKey") apiKey: string,
     @Body() body: YinflowCancelBookingBody,
     @Param("uid") uid: string
   ) {
-    const apiKey = req.headers.apiKey;
-
     const { cancellationReason } = body;
+
+    return { apiKey, body, uid };
 
     const params = cancellationReason ? `&cancellationReason=${cancellationReason}` : "";
 
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-booking-by-id?uid=${uid}${params}`, {
         headers: {
-          apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
+          apiKey,
         },
         method: "POST",
       });
@@ -279,7 +279,7 @@ export class AppController {
 
   @Get("/v2/me/:id")
   @Version(VERSION_NEUTRAL)
-  async getMe(@Req() req: Request, @Headers() apiKey: string, @Param("id") id: string) {
+  async getMe(@Headers() apiKey: string, @Param("id") id: string) {
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-me?id=${id}`, {
         headers: {
