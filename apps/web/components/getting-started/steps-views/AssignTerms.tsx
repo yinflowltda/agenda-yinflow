@@ -8,12 +8,16 @@ import { Button, Icon } from "@calcom/ui";
 const DIRECTUS_BASE_URL = "https://agenda.yinflow.life/api";
 const DIRECTUS_TOKEN = process.env.NEXT_PUBLIC_DIRECTUS_TOKEN || "";
 
+interface AssignTermsProps {
+  nextStep: () => void;
+}
+
 interface ProfessionalInfo {
   id: number;
   social_reason: string;
   legal_representative: string;
 }
-const AssignTerms = () => {
+const AssignTerms = ({ nextStep }: AssignTermsProps) => {
   const [termsIsAssigned, setTermsIsAssigned] = useState(false);
   const [professionalInfo, setProfessionalInfo] = useState<ProfessionalInfo | null>(null);
   const [user] = trpc.viewer.me.useSuspenseQuery();
@@ -21,7 +25,7 @@ const AssignTerms = () => {
 
   useEffect(() => {
     if (user) {
-      fetch(`${DIRECTUS_BASE_URL}/get-pro-professionals?email=${"pedro@yangflow.us"}`, {
+      fetch(`${DIRECTUS_BASE_URL}/get-pro-professionals?email=${user.email}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${DIRECTUS_TOKEN}`,
@@ -54,7 +58,7 @@ const AssignTerms = () => {
   }, [user]);
 
   return (
-    <form>
+    <form onSubmit={nextStep}>
       <span>Por favor, leia atentamente e preencha todas as partes solicitadas.</span>
       <div className="mt-2 h-[40vh] overflow-scroll">
         {professionalInfo ? (
@@ -85,7 +89,9 @@ const AssignTerms = () => {
             }}
           />
         ) : (
-          <Icon name="loader" />
+          <div className="flex h-full items-center justify-center">
+            <Icon name="loader" />
+          </div>
         )}
       </div>
       {termsIsAssigned && (

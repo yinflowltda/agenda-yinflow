@@ -107,7 +107,7 @@ const stepRouteSchema = z.object({
 });
 
 export type PageProps = inferSSRProps<typeof getServerSideProps>;
-const OnboardingPage = (props: PageProps) => {
+const OnboardingPage = () => {
   const pathname = usePathname();
   const params = useParamsWithFallback();
 
@@ -177,9 +177,11 @@ const OnboardingPage = (props: PageProps) => {
               </header>
               <Steps maxSteps={steps.length} currentStep={currentStepIndex + 1} nextStep={goToNextStep} />
             </div>
-            <StepCard>
+            <StepCard isAssigned={currentStepIndex === 0}>
               <Suspense fallback={<Icon name="loader" />}>
-                {(currentStep as "assign-terms") === "assign-terms" && <AssignTerms />}
+                {(currentStep as "assign-terms") === "assign-terms" && (
+                  <AssignTerms nextStep={goToNextStep} />
+                )}
                 {currentStep === "user-settings" && (
                   <UserSettings nextStep={goToNextStep} hideUsername={from === "signup"} />
                 )}
