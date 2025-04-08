@@ -15,6 +15,7 @@ import {
 import { IsOptional, IsString } from "class-validator";
 
 import { HttpError } from "@calcom/platform-libraries";
+import { Attendee } from "@calcom/prisma/client";
 
 interface YinflowRequest extends Omit<Request, "headers"> {
   headers: {
@@ -39,6 +40,12 @@ class YinflowRescheduleBookingBody {
   @IsString()
   @IsOptional()
   reschedulingReason?: string;
+}
+
+class YinflowMarkAbsentBookingBody {
+  @IsString()
+  @IsOptional()
+  attendees?: Attendee[];
 }
 
 const AGENDA_BASE_URL = "https://agenda.yinflow.life/api";
@@ -73,7 +80,7 @@ export class AppController {
       : `?uid=${uid}`;
 
     try {
-      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-booking-by-id${params}`, {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-cancel-booking-by-id${params}`, {
         headers: {
           apiKey: authorization,
         },
@@ -92,20 +99,46 @@ export class AppController {
   @Post("/v2/bookings/:uid/reschedule")
   @Version(VERSION_NEUTRAL)
   async rescheduleBookingById(
-    @Req() req: YinflowRequest,
+    @Headers("Authorization") authorization: string,
     @Body() body: YinflowRescheduleBookingBody,
     @Param("uid") uid: string
   ) {
-    const apiKey = req.headers.apiKey;
-
     const { start } = body;
 
-    const params = start ? `&start=${start}` : "";
+    const params = start ? `?uid=${uid}&start=${start}` : `?uid=${uid}`;
 
     try {
-      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-booking-by-id?uid=${uid}${params}`, {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-reschedule-booking-by-id${params}`, {
         headers: {
-          apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
+          apiKey: authorization,
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) throw new HttpException(response.statusText, response.status);
+
+      return await response.json();
+    } catch (err) {
+      const error = err as Error;
+      throw new InternalServerErrorException(error?.message);
+    }
+  }
+
+  @Post("/v2/bookings/:uid/mark-absent")
+  @Version(VERSION_NEUTRAL)
+  async markAbsentBookingById(
+    @Headers("Authorization") authorization: string,
+    @Body() body: YinflowMarkAbsentBookingBody,
+    @Param("uid") uid: string
+  ) {
+    const { attendees } = body;
+
+    const params = attendees ? `?uid=${uid}&start=${attendees}` : `?uid=${uid}`;
+
+    try {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-reschedule-booking-by-id${params}`, {
+        headers: {
+          apiKey: authorization,
         },
         method: "POST",
       });
@@ -121,13 +154,11 @@ export class AppController {
 
   @Get("/v2/bookings/:uid")
   @Version(VERSION_NEUTRAL)
-  async getBookingById(@Req() req: YinflowRequest, @Param("uid") uid: string) {
-    const apiKey = req.headers.apiKey;
-
+  async getBookingById(@Headers("Authorization") authorization: string, @Param("uid") uid: string) {
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-booking-by-id?uid=${uid}`, {
         headers: {
-          apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
+          apiKey: authorization,
         },
         method: "GET",
       });
