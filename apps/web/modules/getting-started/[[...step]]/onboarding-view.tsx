@@ -179,9 +179,7 @@ const OnboardingPage = (props: PageProps) => {
             </div>
             <StepCard>
               <Suspense fallback={<Icon name="loader" />}>
-                {(currentStep as "assign-terms") === "assign-terms" && (
-                  <AssignTerms nextStep={goToNextStep} />
-                )}
+                {(currentStep as "assign-terms") === "assign-terms" && <AssignTerms />}
                 {currentStep === "user-settings" && (
                   <UserSettings nextStep={goToNextStep} hideUsername={from === "signup"} />
                 )}
