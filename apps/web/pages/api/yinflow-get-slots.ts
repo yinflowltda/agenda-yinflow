@@ -358,12 +358,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     ctx: {},
   });
 
-  return res.status(200).json({
-    status: "success",
-    data: availableSlots,
-    error: {},
-  });
-
   const formatted = await getFormattedAvailableSlots(
     availableSlots,
     queryTransformed.eventTypeId,
