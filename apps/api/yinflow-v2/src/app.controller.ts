@@ -62,20 +62,20 @@ export class AppController {
   @Post("/v2/bookings/:uid/cancel")
   @Version(VERSION_NEUTRAL)
   async cancelBookingById(
-    @Headers("apiKey") apiKey: string,
+    @Headers("Authorization") authorization: string,
     @Body() body: YinflowCancelBookingBody,
     @Param("uid") uid: string
   ) {
     const { cancellationReason } = body;
 
-    return { apiKey, body, uid };
-
-    const params = cancellationReason ? `&cancellationReason=${cancellationReason}` : "";
+    const params = cancellationReason
+      ? `?uid=${uid}&cancellationReason=${cancellationReason}`
+      : `?uid=${uid}`;
 
     try {
-      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-booking-by-id?uid=${uid}${params}`, {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-booking-by-id${params}`, {
         headers: {
-          apiKey,
+          apiKey: authorization,
         },
         method: "POST",
       });
@@ -279,11 +279,11 @@ export class AppController {
 
   @Get("/v2/me/:id")
   @Version(VERSION_NEUTRAL)
-  async getMe(@Headers() apiKey: string, @Param("id") id: string) {
+  async getMe(@Headers("Authorization") authorization: string, @Param("id") id: string) {
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-me?id=${id}`, {
         headers: {
-          apiKey,
+          apiKey: authorization,
         },
         method: "GET",
       });
