@@ -162,7 +162,7 @@ const OnboardingPage = () => {
       key={pathname}>
       <div className="mx-auto py-6 sm:px-4 md:py-24">
         <div className="relative">
-          <div className="sm:mx-auto sm:w-full sm:max-w-[600px]">
+          <div className={`sm:mx-auto sm:w-full sm:max-w-[${currentStepIndex === 0 ? 900 : 600}px]`}>
             <div className="mx-auto px-4 sm:max-w-[520px]">
               <header>
                 <p className="font-cal mb-3 text-[28px] font-medium leading-7">

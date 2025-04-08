@@ -36,7 +36,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
       },
       data: {
         startTime: dayjs(start).toDate(),
-        endTime: dayjs(start).toDate(),
+        endTime: dayjs(start).add(50, "minutes").toDate(),
       },
     });
 

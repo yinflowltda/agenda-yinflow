@@ -75,7 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     where: {
       ...(status && { status: status.toUpperCase() as BookingStatus }),
       // ...(eventTypeId && { eventTypeId }),
-      // ...(formattedTeamIds && { teamId: { in: formattedTeamIds } }),
+      ...(formattedTeamIds && { teamId: { in: formattedTeamIds } }),
       ...(afterStart && { startTime: { gt: dayjs(afterStart).subtract(THREE_HOURS_IN_MINUTES).toDate() } }),
       ...(beforeEnd && { endTime: { lt: dayjs(beforeEnd).subtract(THREE_HOURS_IN_MINUTES).toDate() } }),
       ...(afterCreateAt && {
