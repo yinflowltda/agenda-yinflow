@@ -5,6 +5,7 @@ import {
   Headers,
   HttpException,
   InternalServerErrorException,
+  NotFoundException,
   Param,
   Post,
   Query,
@@ -12,19 +13,22 @@ import {
   Version,
   VERSION_NEUTRAL,
 } from "@nestjs/common";
-import { IsOptional, IsString } from "class-validator";
+import { IsArray, IsNumber, IsObject, IsOptional, IsString } from "class-validator";
+import dayjs from "dayjs";
 
-import { HttpError } from "@calcom/platform-libraries";
+import { ReqBodyMetadata } from "@calcom/features/bookings/lib/handleNewBooking/getBookingData";
+import { SUCCESS_STATUS } from "@calcom/platform-constants";
+import { BookingResponse, HttpError } from "@calcom/platform-libraries";
+import { ApiResponse } from "@calcom/platform-types";
 import { Attendee } from "@calcom/prisma/client";
+import { BookingFieldType } from "@calcom/prisma/zod-utils";
+
+import { supabase } from "./config/supabase";
 
 interface YinflowRequest extends Omit<Request, "headers"> {
   headers: {
     apiKey: string;
   };
-}
-
-interface YinflowCancelBookingRequest {
-  cancellationReason: string;
 }
 
 class YinflowCancelBookingBody {
@@ -48,6 +52,26 @@ class YinflowMarkAbsentBookingBody {
   attendees?: Attendee[];
 }
 
+class YinflowCreateBookingBody {
+  @IsObject()
+  attendee!: Attendee;
+
+  @IsArray()
+  bookingFieldsResponses!: { [BookingFieldType]: string }[];
+
+  @IsNumber()
+  eventTypeId!: number;
+
+  @IsString()
+  start!: string;
+
+  @IsObject()
+  metadata!: ReqBodyMetadata;
+
+  @IsNumber()
+  lengthInMinutes!: number;
+}
+
 const AGENDA_BASE_URL = "https://agenda.yinflow.life/api";
 
 @Controller()
@@ -64,6 +88,60 @@ export class AppController {
     return JSON.stringify({
       message: "Welcome to Cal.com API V2 - docs are at https://developer.cal.com/api",
     });
+  }
+
+  @Post("/v2/bookings")
+  async createBooking(
+    @Body() body: YinflowCreateBookingBody
+  ): Promise<ApiResponse<Partial<BookingResponse>>> {
+    const { attendee, bookingFieldsResponses, eventTypeId, start, metadata, lengthInMinutes } = body;
+
+    const end = dayjs(start)
+      .add(lengthInMinutes || 50, "minutes")
+      .toISOString();
+
+    try {
+      const { data: eventType } = await supabase
+        .from("EventType")
+        .select("title")
+        .eq("id", eventTypeId)
+        .single();
+
+      if (!eventType) throw new NotFoundException("Event type not found.");
+
+      try {
+        const response = await fetch(`${AGENDA_BASE_URL}/yinflow-post-booking`, {
+          body: JSON.stringify({
+            eventTypeId,
+            start,
+            end,
+            responses: bookingFieldsResponses || {},
+            metadata: metadata || {},
+            timeZone: attendee.timeZone,
+            language: attendee.language,
+            title: eventType.title,
+          }),
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) throw new HttpException(response.statusText, response.status);
+
+        const responseData = await response.json();
+
+        return {
+          status: SUCCESS_STATUS,
+          data: responseData,
+        };
+      } catch (err) {
+        this.handleBookingErrors(err);
+      }
+    } catch (err) {
+      this.handleBookingErrors(err);
+    }
+    throw new InternalServerErrorException("Could not create booking.");
   }
 
   @Post("/v2/bookings/:uid/cancel")
@@ -378,61 +456,6 @@ export class AppController {
       throw new InternalServerErrorException(error?.message);
     }
   }
-
-  // @Post("/v2/bookings")
-  // async createBooking(
-  //   @Req() req: BookingRequest,
-  //   @Body() body: CreateBookingInput
-  // ): Promise<ApiResponse<Partial<BookingResponse>>> {
-  //   const { start, metadata, lengthInMinutes } = body;
-
-  //   const end = dayjs(start)
-  //     .add(lengthInMinutes || 50, "minutes")
-  //     .toISOString();
-
-  //   try {
-  //     const { data: eventType } = await supabase
-  //       .from("EventType")
-  //       .select("title")
-  //       .eq("id", req.body.eventTypeId)
-  //       .single();
-
-  //     if (!eventType) throw new NotFoundException("Event type not found.");
-
-  //     try {
-  //       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-post-booking`, {
-  //         body: JSON.stringify({
-  //           eventTypeId: req.body.eventTypeId,
-  //           start: req.body.start,
-  //           end,
-  //           responses: req.body.bookingFieldsResponses || {},
-  //           metadata: metadata || {},
-  //           timeZone: req.body.attendee.timeZone,
-  //           language: req.body.attendee.language,
-  //           title: eventType.title,
-  //         }),
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       });
-
-  //       if (!response.ok) throw new HttpException(response.statusText, response.status);
-
-  //       const responseData = await response.json();
-
-  //       return {
-  //         status: SUCCESS_STATUS,
-  //         data: responseData,
-  //       };
-  //     } catch (err) {
-  //       this.handleBookingErrors(err);
-  //     }
-  //   } catch (err) {
-  //     this.handleBookingErrors(err);
-  //   }
-  //   throw new InternalServerErrorException("Could not create booking.");
-  // }
 
   private handleBookingErrors(
     err: Error | HttpError | unknown,
