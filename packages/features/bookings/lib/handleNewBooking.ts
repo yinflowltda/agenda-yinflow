@@ -382,6 +382,8 @@ async function handler(
     ...reqBody
   } = bookingData;
 
+  return { vasco: "vasco" };
+
   let troubleshooterData = buildTroubleshooterData({
     eventType,
   });
