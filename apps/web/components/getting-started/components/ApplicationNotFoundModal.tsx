@@ -2,8 +2,13 @@ import { Syne, Source_Sans_3 } from "next/font/google";
 import type { FC } from "react";
 import React from "react";
 
-const syne = Syne();
-const sourceSans3 = Source_Sans_3();
+const syne = Syne({ preload: true, subsets: ["latin"], variable: "--font-syne", display: "swap" });
+const sourceSans3 = Source_Sans_3({
+  preload: true,
+  subsets: ["latin"],
+  variable: "--font-source-sans-3",
+  display: "swap",
+});
 
 interface ApplicationNotFoundModalProps {
   isOpen: boolean;
