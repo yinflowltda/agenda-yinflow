@@ -354,18 +354,11 @@ export class AppController {
   ) {
     let customParams = [];
 
-    switch (true) {
-      case username !== undefined:
-        customParams.push(`username=${username}`);
-      case usernames !== undefined:
-        customParams.push(`usernames=${usernames}`);
-      case eventSlug !== undefined:
-        customParams.push(`eventSlug=${eventSlug}`);
-      case orgId !== undefined:
-        customParams.push(`orgId=${orgId}`);
-      case orgSlug !== undefined:
-        customParams.push(`orgSlug=${orgSlug}`);
-    }
+    if (!!username) customParams.push(`username=${username}`);
+    if (!!usernames) customParams.push(`usernames=${usernames}`);
+    if (!!eventSlug) customParams.push(`eventSlug=${eventSlug}`);
+    if (!!orgId) customParams.push(`orgId=${orgId}`);
+    if (!!orgSlug) customParams.push(`orgSlug=${orgSlug}`);
 
     const params = customParams.length ? `?${customParams.join("&")}` : "";
 
@@ -401,24 +394,14 @@ export class AppController {
   ) {
     let customParams = [];
 
-    switch (true) {
-      case !!start:
-        customParams.push(`start=${start}`);
-      case !!end:
-        customParams.push(`end=${end}`);
-      case !!duration:
-        customParams.push(`duration=${duration}`);
-      case !!eventTypeId:
-        customParams.push(`eventTypeId=${eventTypeId}`);
-      case !!eventTypeSlug:
-        customParams.push(`eventTypeSlug=${eventTypeSlug}`);
-      case !!usernameList:
-        customParams.push(`usernameList=${usernameList}`);
-      case !!timeZone:
-        customParams.push(`timeZone=${timeZone}`);
-      case !!orgSlug:
-        customParams.push(`orgSlug=${orgSlug}`);
-    }
+    if (start && start !== "undefined") customParams.push(`start=${start}`);
+    if (end && end !== "undefined") customParams.push(`end=${end}`);
+    if (duration && duration !== "undefined") customParams.push(`duration=${duration}`);
+    if (eventTypeId && eventTypeId !== "undefined") customParams.push(`eventTypeId=${eventTypeId}`);
+    if (eventTypeSlug && eventTypeSlug !== "undefined") customParams.push(`eventTypeSlug=${eventTypeSlug}`);
+    if (usernameList && usernameList !== "undefined") customParams.push(`usernameList=${usernameList}`);
+    if (timeZone && timeZone !== "undefined") customParams.push(`timeZone=${timeZone}`);
+    if (orgSlug && orgSlug !== "undefined") customParams.push(`orgSlug=${orgSlug}`);
 
     const params = customParams.length ? `?${customParams.join("&")}` : "";
 
