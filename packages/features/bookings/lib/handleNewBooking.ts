@@ -352,12 +352,13 @@ async function handler(
     bookingFields: eventType.bookingFields,
   });
 
-  return { vasco: "vasco" };
   const bookingData = await getBookingData({
     req,
     eventType,
     schema: bookingDataSchema,
   });
+
+  return { vasco: "vasco" };
 
   const {
     recurringCount,
