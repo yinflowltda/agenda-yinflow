@@ -355,15 +355,15 @@ export class AppController {
     let customParams = [];
 
     switch (true) {
-      case !!username:
+      case username !== undefined:
         customParams.push(`username=${username}`);
-      case !!usernames:
+      case usernames !== undefined:
         customParams.push(`usernames=${usernames}`);
-      case !!eventSlug:
+      case eventSlug !== undefined:
         customParams.push(`eventSlug=${eventSlug}`);
-      case !!orgId:
+      case orgId !== undefined:
         customParams.push(`orgId=${orgId}`);
-      case !!orgSlug:
+      case orgSlug !== undefined:
         customParams.push(`orgSlug=${orgSlug}`);
     }
 
