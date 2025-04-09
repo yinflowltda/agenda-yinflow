@@ -9,13 +9,11 @@ interface ApplicationNotFoundModalProps {
   isOpen: boolean;
 }
 
-const ApplicationNotFoundModal: FC<ApplicationNotFoundModalProps> = ({ isOpen, onClose }) => {
+const ApplicationNotFoundModal: FC<ApplicationNotFoundModalProps> = ({ isOpen }) => {
   if (!isOpen) return null;
 
   return (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
       <div className="relative h-[280px] w-[700px] rounded-[12px] bg-white p-6 px-[32px] pb-[32px] pt-[44px] text-center shadow-xl">
         <div className="absolute inset-x-0 -top-[13%] mx-auto flex h-[55px] w-[55px] items-center justify-center rounded-full bg-[#f4f6f8] shadow-[0_2px_5px_rgba(0,0,0,0.2)]">
           <svg
