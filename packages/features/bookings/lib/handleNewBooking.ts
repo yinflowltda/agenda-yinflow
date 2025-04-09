@@ -358,8 +358,6 @@ async function handler(
     schema: bookingDataSchema,
   });
 
-  return { vasco: "vasco" };
-
   const {
     recurringCount,
     noEmail,
