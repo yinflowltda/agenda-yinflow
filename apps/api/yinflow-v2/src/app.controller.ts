@@ -346,11 +346,11 @@ export class AppController {
   @Version(VERSION_NEUTRAL)
   async getEventTypes(
     @Headers("Authorization") authorization: string,
-    @Query("username") username: string,
-    @Query("usernames") usernames: string,
-    @Query("eventSlug") eventSlug: string,
-    @Query("orgId") orgId: string,
-    @Query("orgSlug") orgSlug: string
+    @Query("username") username?: string,
+    @Query("usernames") usernames?: string,
+    @Query("eventSlug") eventSlug?: string,
+    @Query("orgId") orgId?: string,
+    @Query("orgSlug") orgSlug?: string
   ) {
     let customParams = [];
 
@@ -392,12 +392,12 @@ export class AppController {
     @Headers("Authorization") authorization: string,
     @Query("start") start: string,
     @Query("end") end: string,
-    @Query("duration") duration: string,
-    @Query("eventTypeId") eventTypeId: string,
-    @Query("eventTypeSlug") eventTypeSlug: string,
-    @Query("usernameList") usernameList: string,
-    @Query("timeZone") timeZone: string,
-    @Query("orgSlug") orgSlug: string
+    @Query("duration") duration?: string,
+    @Query("eventTypeId") eventTypeId?: string,
+    @Query("eventTypeSlug") eventTypeSlug?: string,
+    @Query("usernameList") usernameList?: string,
+    @Query("timeZone") timeZone?: string,
+    @Query("orgSlug") orgSlug?: string
   ) {
     let customParams = [];
 
