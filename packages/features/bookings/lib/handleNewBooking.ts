@@ -342,6 +342,8 @@ async function handler(
     platformBookingLocation,
   } = req;
 
+  return { vasco: "vasco" };
+
   const eventType = await monitorCallbackAsync(getEventType, {
     eventTypeId: req.body.eventTypeId,
     eventTypeSlug: req.body.eventTypeSlug,
@@ -381,8 +383,6 @@ async function handler(
     _shouldServeCache,
     ...reqBody
   } = bookingData;
-
-  return { vasco: "vasco" };
 
   let troubleshooterData = buildTroubleshooterData({
     eventType,
