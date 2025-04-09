@@ -37,6 +37,7 @@ const AssignTerms = ({ nextStep }: AssignTermsProps) => {
         if (!response.ok) return setApplicationNotFoundModalIsVisible(true);
 
         response.json().then((response) => {
+          if (!response.data.length) return setApplicationNotFoundModalIsVisible(true);
           const proProfessionalId = response.data[0].id;
           const legalRepresentative = response.data[0].fullname;
 
