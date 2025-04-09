@@ -75,6 +75,7 @@ class YinflowCreateBookingBody {
 }
 
 const AGENDA_BASE_URL = "https://agenda.yinflow.life/api";
+const UNDEFINED_QUERY = "undefined";
 
 @Controller()
 export class AppController {
@@ -262,7 +263,7 @@ export class AppController {
     @Query("eventTypeId") eventTypeId: string,
     @Query("eventTypeIds") eventTypeIds: string,
     @Query("teamId") teamId: string,
-    @Query("teamIds") teamIds: string[],
+    @Query("teamIds") teamIds: string,
     @Query("afterStart") afterStart: string,
     @Query("beforeEnd") beforeEnd: string,
     @Query("afterCreateAt") afterCreateAt: string,
@@ -276,52 +277,34 @@ export class AppController {
     @Query("take") take: string,
     @Query("skip") skip: string
   ) {
-    const apiKey = req.headers.apiKey;
-
     let customParams = [];
 
-    switch (true) {
-      case !!status:
-        customParams.push(`status=${status}`);
-      case !!attendeeEmail:
-        customParams.push(`attendeeEmail=${attendeeEmail}`);
-      case !!attendeeName:
-        customParams.push(`attendeeName=${attendeeName}`);
-      case !!eventTypeId:
-        customParams.push(`eventTypeId=${eventTypeId}`);
-      case !!eventTypeIds:
-        customParams.push(`eventTypeIds=${eventTypeIds}`);
-      case !!teamId:
-        customParams.push(`teamId=${teamId}`);
-      case !!teamIds:
-        customParams.push(`teamIds=${teamIds}`);
-      case !!afterStart:
-        customParams.push(`afterStart=${afterStart}`);
-      case !!beforeEnd:
-        customParams.push(`beforeEnd=${beforeEnd}`);
-      case !!afterUpdateAt:
-        customParams.push(`afterUpdateAt=${afterUpdateAt}`);
-      case !!beforeUpdateAt:
-        customParams.push(`beforeUpdateAt=${beforeUpdateAt}`);
-      case !!beforeCreateAt:
-        customParams.push(`beforeCreateAt=${beforeCreateAt}`);
-      case !!afterCreateAt:
-        customParams.push(`afterCreateAt=${afterCreateAt}`);
-      case !!beforeUpdateAt:
-        customParams.push(`beforeUpdateAt=${beforeUpdateAt}`);
-      case !!sortEnd:
-        customParams.push(`sortEnd=${sortEnd}`);
-      case !!sortStart:
-        customParams.push(`sortStart=${sortStart}`);
-      case !!sortCreated:
-        customParams.push(`sortCreated=${sortCreated}`);
-      case !!sortUpdated:
-        customParams.push(`sortUpdated=${sortUpdated}`);
-      case !!take:
-        customParams.push(`take=${take}`);
-      case !!skip:
-        customParams.push(`skip=${skip}`);
-    }
+    if (status && status !== UNDEFINED_QUERY) customParams.push(`status=${status}`);
+    if (attendeeEmail && attendeeEmail !== UNDEFINED_QUERY)
+      customParams.push(`attendeeEmail=${attendeeEmail}`);
+    if (attendeeName && attendeeName !== UNDEFINED_QUERY) customParams.push(`attendeeName=${attendeeName}`);
+    if (eventTypeId && eventTypeId !== UNDEFINED_QUERY) customParams.push(`eventTypeId=${eventTypeId}`);
+    if (eventTypeIds && eventTypeIds !== UNDEFINED_QUERY) customParams.push(`eventTypeIds=${eventTypeIds}`);
+    if (teamId && teamId !== UNDEFINED_QUERY) customParams.push(`teamId=${teamId}`);
+    if (teamIds && teamIds !== UNDEFINED_QUERY) customParams.push(`teamIds=${teamIds}`);
+    if (afterStart && afterStart !== UNDEFINED_QUERY) customParams.push(`afterStart=${afterStart}`);
+    if (beforeEnd && beforeEnd !== UNDEFINED_QUERY) customParams.push(`beforeEnd=${beforeEnd}`);
+    if (afterUpdateAt && afterUpdateAt !== UNDEFINED_QUERY)
+      customParams.push(`afterUpdateAt=${afterUpdateAt}`);
+    if (beforeUpdateAt && beforeUpdateAt !== UNDEFINED_QUERY)
+      customParams.push(`beforeUpdateAt=${beforeUpdateAt}`);
+    if (beforeCreateAt && beforeCreateAt !== UNDEFINED_QUERY)
+      customParams.push(`beforeCreateAt=${beforeCreateAt}`);
+    if (afterCreateAt && afterCreateAt !== UNDEFINED_QUERY)
+      customParams.push(`afterCreateAt=${afterCreateAt}`);
+    if (beforeUpdateAt && beforeUpdateAt !== UNDEFINED_QUERY)
+      customParams.push(`beforeUpdateAt=${beforeUpdateAt}`);
+    if (sortEnd && sortEnd !== UNDEFINED_QUERY) customParams.push(`sortEnd=${sortEnd}`);
+    if (sortStart && sortStart !== UNDEFINED_QUERY) customParams.push(`sortStart=${sortStart}`);
+    if (sortCreated && sortCreated !== UNDEFINED_QUERY) customParams.push(`sortCreated=${sortCreated}`);
+    if (sortUpdated && sortUpdated !== UNDEFINED_QUERY) customParams.push(`sortUpdated=${sortUpdated}`);
+    if (take && take !== UNDEFINED_QUERY) customParams.push(`take=${take}`);
+    if (skip && skip !== UNDEFINED_QUERY) customParams.push(`skip=${skip}`);
 
     const params = customParams.length ? `?${customParams.join("&")}` : "";
 
@@ -354,11 +337,11 @@ export class AppController {
   ) {
     let customParams = [];
 
-    if (!!username) customParams.push(`username=${username}`);
-    if (!!usernames) customParams.push(`usernames=${usernames}`);
-    if (!!eventSlug) customParams.push(`eventSlug=${eventSlug}`);
-    if (!!orgId) customParams.push(`orgId=${orgId}`);
-    if (!!orgSlug) customParams.push(`orgSlug=${orgSlug}`);
+    if (username !== UNDEFINED_QUERY) customParams.push(`username=${username}`);
+    if (usernames !== UNDEFINED_QUERY) customParams.push(`usernames=${usernames}`);
+    if (eventSlug !== UNDEFINED_QUERY) customParams.push(`eventSlug=${eventSlug}`);
+    if (orgId !== UNDEFINED_QUERY) customParams.push(`orgId=${orgId}`);
+    if (orgSlug !== UNDEFINED_QUERY) customParams.push(`orgSlug=${orgSlug}`);
 
     const params = customParams.length ? `?${customParams.join("&")}` : "";
 
@@ -394,18 +377,17 @@ export class AppController {
   ) {
     let customParams = [];
 
-    if (start && start !== "undefined") customParams.push(`start=${start}`);
-    if (end && end !== "undefined") customParams.push(`end=${end}`);
-    if (duration && duration !== "undefined") customParams.push(`duration=${duration}`);
-    if (eventTypeId && eventTypeId !== "undefined") customParams.push(`eventTypeId=${eventTypeId}`);
-    if (eventTypeSlug && eventTypeSlug !== "undefined") customParams.push(`eventTypeSlug=${eventTypeSlug}`);
-    if (usernameList && usernameList !== "undefined") customParams.push(`usernameList=${usernameList}`);
-    if (timeZone && timeZone !== "undefined") customParams.push(`timeZone=${timeZone}`);
-    if (orgSlug && orgSlug !== "undefined") customParams.push(`orgSlug=${orgSlug}`);
+    if (start && start !== UNDEFINED_QUERY) customParams.push(`start=${start}`);
+    if (end && end !== UNDEFINED_QUERY) customParams.push(`end=${end}`);
+    if (duration && duration !== UNDEFINED_QUERY) customParams.push(`duration=${duration}`);
+    if (eventTypeId && eventTypeId !== UNDEFINED_QUERY) customParams.push(`eventTypeId=${eventTypeId}`);
+    if (eventTypeSlug && eventTypeSlug !== UNDEFINED_QUERY)
+      customParams.push(`eventTypeSlug=${eventTypeSlug}`);
+    if (usernameList && usernameList !== UNDEFINED_QUERY) customParams.push(`usernameList=${usernameList}`);
+    if (timeZone && timeZone !== UNDEFINED_QUERY) customParams.push(`timeZone=${timeZone}`);
+    if (orgSlug && orgSlug !== UNDEFINED_QUERY) customParams.push(`orgSlug=${orgSlug}`);
 
     const params = customParams.length ? `?${customParams.join("&")}` : "";
-
-    return params;
 
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-slots${params}`, {
