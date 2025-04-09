@@ -57,7 +57,9 @@ class YinflowCreateBookingBody {
   attendee!: Attendee;
 
   @IsArray()
-  bookingFieldsResponses!: { [BookingFieldType]: string }[];
+  bookingFieldsResponses!: {
+    [K in BookingFieldType]: string;
+  }[];
 
   @IsNumber()
   eventTypeId!: number;
@@ -211,10 +213,10 @@ export class AppController {
   ) {
     const { attendees } = body;
 
-    const params = attendees ? `?uid=${uid}&start=${attendees}` : `?uid=${uid}`;
+    const params = attendees ? `?uid=${uid}&attendees=${attendees}` : `?uid=${uid}`;
 
     try {
-      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-reschedule-booking-by-id${params}`, {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-mark-absent-booking-by-id${params}`, {
         headers: {
           apiKey: authorization,
         },
@@ -419,6 +421,8 @@ export class AppController {
     }
 
     const params = customParams.length ? `?${customParams.join("&")}` : "";
+
+    return params;
 
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-slots${params}`, {
