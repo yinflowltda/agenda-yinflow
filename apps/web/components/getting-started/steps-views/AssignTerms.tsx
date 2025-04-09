@@ -5,6 +5,8 @@ import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { trpc } from "@calcom/trpc/react";
 import { Button, Icon } from "@calcom/ui";
 
+import ApplicationNotFoundModal from "@components/getting-started/components/ApplicationNotFoundModal";
+
 const DIRECTUS_BASE_URL = "https://agenda.yinflow.life/api";
 const DIRECTUS_TOKEN = process.env.NEXT_PUBLIC_DIRECTUS_TOKEN || "";
 
@@ -18,6 +20,7 @@ interface ProfessionalInfo {
   legal_representative: string;
 }
 const AssignTerms = ({ nextStep }: AssignTermsProps) => {
+  const [applicationNotFoundModalIsVisible, setApplicationNotFoundModalIsVisible] = useState(false);
   const [termsIsAssigned, setTermsIsAssigned] = useState(false);
   const [professionalInfo, setProfessionalInfo] = useState<ProfessionalInfo | null>(null);
   const [user] = trpc.viewer.me.useSuspenseQuery();
@@ -31,6 +34,8 @@ const AssignTerms = ({ nextStep }: AssignTermsProps) => {
           Authorization: `Bearer ${DIRECTUS_TOKEN}`,
         },
       }).then((response) => {
+        if (!response.ok) return setApplicationNotFoundModalIsVisible(true);
+
         response.json().then((response) => {
           const proProfessionalId = response.data[0].id;
           const legalRepresentative = response.data[0].fullname;
@@ -44,6 +49,7 @@ const AssignTerms = ({ nextStep }: AssignTermsProps) => {
               },
             }
           ).then((response) => {
+            if (!response.ok) return setApplicationNotFoundModalIsVisible(true);
             response.json().then((response) => {
               setProfessionalInfo({
                 id: proProfessionalId,
@@ -99,6 +105,12 @@ const AssignTerms = ({ nextStep }: AssignTermsProps) => {
           {t("next_step_text")}
         </Button>
       )}
+      <ApplicationNotFoundModal
+        isOpen={applicationNotFoundModalIsVisible}
+        onClose={() => {
+          setApplicationNotFoundModalIsVisible(false);
+        }}
+      />
     </form>
   );
 };
