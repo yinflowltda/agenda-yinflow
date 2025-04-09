@@ -1,9 +1,12 @@
+import { Syne, Source_Sans_3 } from "next/font/google";
 import type { FC } from "react";
 import React from "react";
 
+const syne = Syne();
+const sourceSans3 = Source_Sans_3();
+
 interface ApplicationNotFoundModalProps {
   isOpen: boolean;
-  onClose: () => void;
 }
 
 const ApplicationNotFoundModal: FC<ApplicationNotFoundModalProps> = ({ isOpen, onClose }) => {
@@ -52,10 +55,11 @@ const ApplicationNotFoundModal: FC<ApplicationNotFoundModalProps> = ({ isOpen, o
             </g>
           </svg>
         </div>
-        <h2 className="mb-0 mt-0 font-sans text-[42px] font-medium leading-[48px] tracking-[-0.025em] text-[#012432]">
+        <h2
+          className={`mb-0 mt-0 font-sans text-[42px] font-medium leading-[48px] tracking-[-0.025em] text-[#012432] ${syne.className}`}>
           Não foi possível localizar sua candidatura
         </h2>
-        <p className="mt-[12px] font-sans text-base leading-6">
+        <p className={`mt-[12px] font-sans text-base leading-6 ${sourceSans3.className}`}>
           Se você já passou pela entrevista, por favor verifique se o e-mail informado é o mesmo que foi
           utilizado na Pré-Admissão. Em caso de dúvidas entre em contato com o Time de Operações{" "}
           <a href="mailto:operacoes@yinflow.life" className="text-[#00a587]">

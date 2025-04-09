@@ -106,12 +106,7 @@ const AssignTerms = ({ nextStep }: AssignTermsProps) => {
           {t("next_step_text")}
         </Button>
       )}
-      <ApplicationNotFoundModal
-        isOpen={applicationNotFoundModalIsVisible}
-        onClose={() => {
-          setApplicationNotFoundModalIsVisible(false);
-        }}
-      />
+      <ApplicationNotFoundModal isOpen={applicationNotFoundModalIsVisible} />
     </form>
   );
 };
