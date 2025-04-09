@@ -347,12 +347,12 @@ async function handler(
     eventTypeSlug: req.body.eventTypeSlug,
   });
 
-  return { vasco: "vasco" };
-
   const bookingDataSchema = bookingDataSchemaGetter({
     view: req.body?.rescheduleUid ? "reschedule" : "booking",
     bookingFields: eventType.bookingFields,
   });
+
+  return { vasco: "vasco" };
   const bookingData = await getBookingData({
     req,
     eventType,
