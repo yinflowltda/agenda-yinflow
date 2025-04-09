@@ -342,12 +342,12 @@ async function handler(
     platformBookingLocation,
   } = req;
 
-  return { vasco: "vasco" };
-
   const eventType = await monitorCallbackAsync(getEventType, {
     eventTypeId: req.body.eventTypeId,
     eventTypeSlug: req.body.eventTypeSlug,
   });
+
+  return { vasco: "vasco" };
 
   const bookingDataSchema = bookingDataSchemaGetter({
     view: req.body?.rescheduleUid ? "reschedule" : "booking",
