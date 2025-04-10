@@ -67,11 +67,14 @@ class YinflowCreateBookingBody {
   @IsString()
   start!: string;
 
+  @IsString()
+  location!: string;
+
   @IsObject()
   metadata!: ReqBodyMetadata;
 
   @IsNumber()
-  lengthInMinutes!: number;
+  userId!: number;
 }
 
 const AGENDA_BASE_URL = "https://agenda.yinflow.life/api";
@@ -97,50 +100,32 @@ export class AppController {
   async createBooking(
     @Body() body: YinflowCreateBookingBody
   ): Promise<ApiResponse<Partial<BookingResponse>>> {
-    const { attendee, bookingFieldsResponses, eventTypeId, start, metadata, lengthInMinutes } = body;
-
-    const end = dayjs(start)
-      .add(lengthInMinutes || 50, "minutes")
-      .toISOString();
+    const { attendee, bookingFieldsResponses, eventTypeId, start, userId } = body;
 
     try {
-      const { data: eventType } = await supabase
-        .from("EventType")
-        .select("title")
-        .eq("id", eventTypeId)
-        .single();
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-post-booking`, {
+        body: JSON.stringify({
+          userId,
+          eventTypeId,
+          start,
+          bookingFieldsResponses,
+          attendee,
+          location,
+        }),
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-      if (!eventType) throw new NotFoundException("Event type not found.");
+      if (!response.ok) throw new HttpException(response.statusText, response.status);
 
-      try {
-        const response = await fetch(`${AGENDA_BASE_URL}/yinflow-post-booking`, {
-          body: JSON.stringify({
-            eventTypeId,
-            start,
-            end,
-            responses: bookingFieldsResponses || {},
-            metadata: metadata || {},
-            timeZone: attendee.timeZone,
-            language: attendee.language,
-            title: eventType.title,
-          }),
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+      const responseData = await response.json();
 
-        if (!response.ok) throw new HttpException(response.statusText, response.status);
-
-        const responseData = await response.json();
-
-        return {
-          status: SUCCESS_STATUS,
-          data: responseData,
-        };
-      } catch (err) {
-        this.handleBookingErrors(err);
-      }
+      return {
+        status: SUCCESS_STATUS,
+        data: responseData,
+      };
     } catch (err) {
       this.handleBookingErrors(err);
     }
