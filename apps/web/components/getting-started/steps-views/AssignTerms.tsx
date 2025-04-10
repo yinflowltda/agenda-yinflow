@@ -28,7 +28,7 @@ const AssignTerms = ({ nextStep }: AssignTermsProps) => {
 
   useEffect(() => {
     if (user) {
-      fetch(`${DIRECTUS_BASE_URL}/get-pro-professionals?email=${user.email}`, {
+      fetch(`${DIRECTUS_BASE_URL}/get-pro-professionals?email=${"product@yangflow.us"}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${DIRECTUS_TOKEN}`,
