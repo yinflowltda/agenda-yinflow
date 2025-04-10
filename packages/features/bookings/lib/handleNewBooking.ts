@@ -352,10 +352,6 @@ async function handler(
     bookingFields: eventType.bookingFields,
   });
 
-  return {
-    bookingDataSchema,
-  };
-
   const bookingData = await getBookingData({
     req,
     eventType,
