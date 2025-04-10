@@ -472,7 +472,6 @@ export default function Success(props: PageProps) {
   const isEventCancelled = isCancelled && !seatReferenceUid;
   const isPastBooking = isBookingInPast;
   const isHost = props.isLoggedInUserHost;
-  const isntAuthenticated = session === null && !(userIsOwner || props.hideBranding);
 
   const { description, rescheduleRoute } = useMemo(() => {
     const currentTime = dayjs();
