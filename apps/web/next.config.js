@@ -291,7 +291,12 @@ const nextConfig = {
   },
   async rewrites() {
     const { orgSlug } = nextJsOrgRewriteConfig;
+    // In apps/web/next.config.js
     const beforeFiles = [
+      {
+        source: "/",
+        destination: "/home.html",
+      },
       {
         source: "/home",
         destination: "/home.html",

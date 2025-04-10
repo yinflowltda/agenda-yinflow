@@ -9,7 +9,7 @@ const RedirectPage = async () => {
   const session = await getServerSession({ req: buildLegacyRequest(headers(), cookies()) });
 
   if (!session?.user?.id) {
-    redirect("/auth/login");
+    // redirect("/auth/login");
   }
   redirect("/event-types");
 };
