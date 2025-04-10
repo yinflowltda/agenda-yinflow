@@ -85,6 +85,8 @@ enum VariantDescription {
   MORE_THAN_12_HOURS_LESS_THAN_7_DAYS = "Você tem direito ao reagendamento deste evento sem custo ou reembolso integral em caso de cancelamento.",
   MORE_THAN_7_DAYS = "Você pode reagendar este evento sem custo algum. Caso opte pelo cancelamento, você não terá direito à reembolso pois já se passaram mais de 7 dias da contratação do plano.",
   NO_SHOW_PROFESSIONAL = "Infelizmente o profissional não pôde comparecer a este agendamento. Você tem direito ao reagendamento deste evento sem custo ou reembolso integral em caso de cancelamento.",
+  CANCEL_LESS_THAN_7_DAYS = "Você tem direito ao reembolso integral",
+  CANCEL_MORE_THAN_7_DAYS = "Você não tem direito ao reembolso integral pois já se passaram mais de 7 dias do agendamento.",
 }
 
 interface RescheduleOrCancelWarningProps {
@@ -409,8 +411,7 @@ export default function Success(props: PageProps) {
   function getTitle(): string {
     const titleSuffix = props.recurringBookings ? "_recurring" : "";
     const titlePrefix = isRoundRobin ? "round_robin_" : "";
-    if (isCancelled)
-      return "Se o seu cancelamento é elegível para um reembolso, você poderá acompanhar as atualizações diretamente pelo App.";
+    if (isCancelled) return "";
 
     if (needsConfirmation) {
       if (props.profile.name !== null) {
@@ -492,6 +493,16 @@ export default function Success(props: PageProps) {
     const cognitiveBehavioralTherapy = appointmentType === BookingTypes.COGNTIVE_BEHAVIORAL_THERAPY;
 
     switch (true) {
+      case moreOrEqualThan7DaysFromPurchase && isCancelled:
+        return {
+          description: VariantDescription.CANCEL_MORE_THAN_7_DAYS,
+          rescheduleRoute: "",
+        };
+      case !moreOrEqualThan7DaysFromPurchase && isCancelled:
+        return {
+          description: VariantDescription.CANCEL_LESS_THAN_7_DAYS,
+          rescheduleRoute: "",
+        };
       case absentHost && medicalAppointments:
         return {
           description: VariantDescription.NO_SHOW_PROFESSIONAL,
