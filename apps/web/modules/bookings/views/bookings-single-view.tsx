@@ -146,8 +146,8 @@ const RescheduleOrCancelWarning = ({ description }: RescheduleOrCancelWarningPro
     <div className="my-6 flex items-center rounded border border-[#E6EBF0] bg-[#F4F6F8] p-2 text-xs text-[#598392]">
       <svg
         className="mr-2"
-        width="32"
-        height="32"
+        width="16"
+        height="16"
         viewBox="0 0 16 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg">
@@ -1184,19 +1184,17 @@ export default function Success(props: PageProps) {
                         </>
                       )}
                     <RescheduleOrCancelWarning description={description} />
-                    {!isEventCancelled && (
-                      <div className="mt-4 flex justify-center">
-                        <span className=" text-xs">
-                          Confira a nossa{" "}
-                          <Link
-                            className="underline"
-                            target="_blank"
-                            href="https://www.yinflow.life/discover#politica-de-cancelamento-e-reembolso">
-                            política de reagendamentos, cancelamentos e reembolsos.
-                          </Link>
-                        </span>
-                      </div>
-                    )}
+                    <div className="mt-4 flex justify-center">
+                      <span className=" text-xs">
+                        Confira a nossa{" "}
+                        <Link
+                          className="underline"
+                          target="_blank"
+                          href="https://www.yinflow.life/discover#politica-de-cancelamento-e-reembolso">
+                          política de reagendamentos, cancelamentos e reembolsos.
+                        </Link>
+                      </span>
+                    </div>
 
                     {/* {session === null && !(userIsOwner || props.hideBranding) && (
                       <>
