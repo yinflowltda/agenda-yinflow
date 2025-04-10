@@ -614,16 +614,17 @@ export default function Success(props: PageProps) {
         return { description: "", rescheduleRoute: "" };
     }
   }, [
-    appointmentType,
     bookingInfo.startTime,
     bookingInfo?.uid,
-    currentUserEmail,
-    eventTypes,
     isPastBooking,
-    absentHost,
-    props.profile.slug,
     purchaseDate,
+    eventTypes,
+    appointmentType,
+    props.profile.slug,
+    isCancelled,
+    absentHost,
     seatReferenceUid,
+    currentUserEmail,
   ]);
 
   const successPageHeadline = (() => {
@@ -1182,7 +1183,7 @@ export default function Success(props: PageProps) {
                           </div>
                         </>
                       )}
-                    {!isEventCancelled && <RescheduleOrCancelWarning description={description} />}
+                    <RescheduleOrCancelWarning description={description} />
                     {!isEventCancelled && (
                       <div className="mt-4 flex justify-center">
                         <span className=" text-xs">
