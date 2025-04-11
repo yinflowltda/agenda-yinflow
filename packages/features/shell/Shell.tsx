@@ -7,7 +7,10 @@ import React, { cloneElement } from "react";
 import { Toaster } from "sonner";
 
 import { useRedirectToLoginIfUnauthenticated } from "@calcom/features/auth/lib/hooks/useRedirectToLoginIfUnauthenticated";
-import { useRedirectToOnboardingIfNeeded } from "@calcom/features/auth/lib/hooks/useRedirectToOnboardingIfNeeded";
+import {
+  useRedirectToOnboardingIfNeeded,
+  ShowOnboardingStatus,
+} from "@calcom/features/auth/lib/hooks/useRedirectToOnboardingIfNeeded";
 import { KBarContent, KBarRoot } from "@calcom/features/kbar/Kbar";
 import TimezoneChangeDialog from "@calcom/features/settings/TimezoneChangeDialog";
 import { APP_NAME } from "@calcom/lib/constants";
@@ -15,6 +18,8 @@ import { useFormbricks } from "@calcom/lib/formbricks-client";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { Button, ErrorBoundary, HeadSeo, SkeletonText } from "@calcom/ui";
 import classNames from "@calcom/ui/classNames";
+
+import Loader from "@components/Loader";
 
 import { SideBarContainer } from "./SideBar";
 import { TopNavContainer } from "./TopNav";
@@ -122,9 +127,14 @@ export default function Shell(props: LayoutProps) {
   // if a page is unauthed and isPublic is true, the redirect does not happen.
   useRedirectToLoginIfUnauthenticated(props.isPublic);
   useAppTheme();
-  const { isRedirectingToOnboarding, needsEmailVerification } = useRedirectToOnboardingIfNeeded();
+  const { isRedirectingToOnboarding } = useRedirectToOnboardingIfNeeded();
 
-  if (!pathname?.startsWith("/getting-started")) return <div />;
+  if (!pathname?.startsWith("/getting-started") && isRedirectingToOnboarding !== ShowOnboardingStatus.NO)
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader />
+      </div>
+    );
 
   return !props.isPublic ? (
     <KBarWrapper withKBar>
