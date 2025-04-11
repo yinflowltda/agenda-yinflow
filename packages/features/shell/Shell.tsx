@@ -121,10 +121,15 @@ const PublicShell = (props: LayoutProps) => {
 };
 
 export default function Shell(props: LayoutProps) {
+  const pathname = usePathname();
   // if a page is unauthed and isPublic is true, the redirect does not happen.
   useRedirectToLoginIfUnauthenticated(props.isPublic);
   useAppTheme();
   const { isRedirectingToOnboarding, needsEmailVerification } = useRedirectToOnboardingIfNeeded();
+
+  useEffect(() => {
+    console.log({ pathname });
+  }, [pathname]);
 
   if (
     (isRedirectingToOnboarding !== ShowOnboardingStaus.YES &&
