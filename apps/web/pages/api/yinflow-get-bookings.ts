@@ -15,13 +15,39 @@ const getTeamIds = (teamId?: string, teamIds?: string): number[] | null => {
   return null;
 };
 
-const getEventTypeIds = (eventTypeId?: string, eventTypeIds?: string): number[] | null => {
+const getEventTypeIds = async (
+  eventTypeId?: string,
+  eventTypeIds?: string,
+  teamIds?: number[] | null
+): Promise<number[] | null> => {
+  const prisma = (await import("@calcom/prisma")).default;
+
+  const ids = [];
+
+  if (teamIds) {
+    const eventTypeIdsByTeamIds = await prisma.eventType.findMany({
+      where: {
+        teamId: { in: teamIds },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    ids.push(...eventTypeIdsByTeamIds.map(({ id }) => id));
+  }
+
   const eventTypeIdsArray = eventTypeIds && eventTypeIds.split(",").map((eventType) => eventType.trim());
 
-  if (eventTypeIdsArray) return eventTypeIdsArray.map((eventType) => parseInt(eventType, 10));
-  if (eventTypeId) return [parseInt(eventTypeId, 10)];
+  if (eventTypeIdsArray) ids.push(...eventTypeIdsArray.map((eventType) => parseInt(eventType, 10)));
+  if (eventTypeId) ids.push(parseInt(eventTypeId, 10));
 
-  return null;
+  return ids.length
+    ? ids.reduce(
+        (acc, number) => (acc.find((item) => number === item) ? acc : [...acc, number]),
+        [] as number[]
+      )
+    : null;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
@@ -69,13 +95,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   //   });
 
   const formattedTeamIds = getTeamIds(teamId, teamIds);
-  const formattedEventTypeIds = getEventTypeIds(eventTypeId, eventTypeIds);
+  const formattedEventTypeIds = await getEventTypeIds(eventTypeId, eventTypeIds, formattedTeamIds);
 
   const bookings = await prisma.booking.findMany({
     where: {
       ...(status && { status: status.toUpperCase() as BookingStatus }),
-      // ...(eventTypeId && { eventTypeId }),
-      ...(formattedTeamIds && { teamId: { in: formattedTeamIds } }),
+      ...(formattedEventTypeIds && { eventTypeId: { in: formattedEventTypeIds } }),
+      ...(attendeeEmail && {
+        attendees: { some: { email: attendeeEmail.trim() } },
+      }),
+      ...(attendeeName && {
+        attendees: { some: { name: attendeeName.trim() } },
+      }),
       ...(afterStart && { startTime: { gt: dayjs(afterStart).subtract(THREE_HOURS_IN_MINUTES).toDate() } }),
       ...(beforeEnd && { endTime: { lt: dayjs(beforeEnd).subtract(THREE_HOURS_IN_MINUTES).toDate() } }),
       ...(afterCreateAt && {
