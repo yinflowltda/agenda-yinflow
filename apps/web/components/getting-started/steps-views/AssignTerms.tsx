@@ -90,7 +90,7 @@ const AssignTerms = ({ nextStep }: AssignTermsProps) => {
               title: "Próximo",
               url: "/getting-started/user-settings",
             }}
-            customCss=".btn { background-color: #06C6A3 !important; border: none; }"
+            customCss="button { background-color: #06C6A3 !important; border: none; }"
             onLoad={(data) => {
               if (data.completed_submitter) setTermsIsAssigned(true);
             }}
