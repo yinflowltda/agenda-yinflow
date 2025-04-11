@@ -57,5 +57,6 @@ export function useRedirectToOnboardingIfNeeded() {
 
   return {
     isRedirectingToOnboarding,
+    needsEmailVerification,
   };
 }

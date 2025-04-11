@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import type { Dispatch, ReactElement, ReactNode, SetStateAction } from "react";
-import React, { cloneElement, useEffect } from "react";
+import React, { cloneElement } from "react";
 import { Toaster } from "sonner";
 
 import { useRedirectToLoginIfUnauthenticated } from "@calcom/features/auth/lib/hooks/useRedirectToLoginIfUnauthenticated";
@@ -124,13 +124,14 @@ export default function Shell(props: LayoutProps) {
   // if a page is unauthed and isPublic is true, the redirect does not happen.
   useRedirectToLoginIfUnauthenticated(props.isPublic);
   useAppTheme();
-  const { isRedirectingToOnboarding } = useRedirectToOnboardingIfNeeded();
+  const { isRedirectingToOnboarding, needsEmailVerification } = useRedirectToOnboardingIfNeeded();
 
-  useEffect(() => {
-    console.log({ isRedirectingToOnboarding });
-  }, [isRedirectingToOnboarding]);
-
-  if (isRedirectingToOnboarding === ShowOnboardingStaus.LOADING) return <div />;
+  if (
+    (isRedirectingToOnboarding !== ShowOnboardingStaus.YES &&
+      isRedirectingToOnboarding !== ShowOnboardingStaus.NO) ||
+    needsEmailVerification
+  )
+    return <div />;
 
   return !props.isPublic ? (
     <KBarWrapper withKBar>
