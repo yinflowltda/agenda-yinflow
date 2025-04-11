@@ -5,7 +5,6 @@ import {
   Headers,
   HttpException,
   InternalServerErrorException,
-  NotFoundException,
   Param,
   Post,
   Query,
@@ -14,7 +13,6 @@ import {
   VERSION_NEUTRAL,
 } from "@nestjs/common";
 import { IsArray, IsNumber, IsObject, IsOptional, IsString } from "class-validator";
-import dayjs from "dayjs";
 
 import { ReqBodyMetadata } from "@calcom/features/bookings/lib/handleNewBooking/getBookingData";
 import { SUCCESS_STATUS } from "@calcom/platform-constants";
@@ -22,14 +20,6 @@ import { BookingResponse, HttpError } from "@calcom/platform-libraries";
 import { ApiResponse } from "@calcom/platform-types";
 import { Attendee } from "@calcom/prisma/client";
 import { BookingFieldType } from "@calcom/prisma/zod-utils";
-
-import { supabase } from "./config/supabase";
-
-interface YinflowRequest extends Omit<Request, "headers"> {
-  headers: {
-    apiKey: string;
-  };
-}
 
 class YinflowCancelBookingBody {
   @IsString()
@@ -100,7 +90,7 @@ export class AppController {
   async createBooking(
     @Body() body: YinflowCreateBookingBody
   ): Promise<ApiResponse<Partial<BookingResponse>>> {
-    const { attendee, bookingFieldsResponses, eventTypeId, start, userId } = body;
+    const { attendee, bookingFieldsResponses, eventTypeId, location, start, userId } = body;
 
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-post-booking`, {
@@ -241,7 +231,7 @@ export class AppController {
   @Get("/v2/bookings")
   @Version(VERSION_NEUTRAL)
   async getBookings(
-    @Req() req: YinflowRequest,
+    @Headers("Authorization") authorization: string,
     @Query("status") status: string,
     @Query("attendeeEmail") attendeeEmail: string,
     @Query("attendeeName") attendeeName: string,
@@ -296,7 +286,7 @@ export class AppController {
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-get-bookings${params}`, {
         headers: {
-          apiKey: "cal_f63feaae3cc8fc723f1226917933fc7c",
+          apiKey: authorization,
         },
         method: "GET",
       });
