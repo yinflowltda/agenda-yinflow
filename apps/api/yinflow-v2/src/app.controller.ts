@@ -91,20 +91,9 @@ export class AppController {
     @Headers("Authorization") authorization: string,
     @Body() body: YinflowCreateBookingBody
   ): Promise<ApiResponse<Partial<BookingResponse>>> {
-    const { attendee, bookingFieldsResponses, eventTypeId, location, start, userId } = body;
-
-    return body;
-
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-post-booking`, {
-        body: JSON.stringify({
-          userId,
-          start,
-          eventTypeId,
-          attendee,
-          bookingFieldsResponses,
-          location,
-        }),
+        body: JSON.stringify(body),
         method: "POST",
         headers: {
           apiKey: authorization,
@@ -121,9 +110,9 @@ export class AppController {
         data: responseData,
       };
     } catch (err) {
-      this.handleBookingErrors(err);
+      const error = err as Error;
+      throw new InternalServerErrorException(error?.message);
     }
-    throw new InternalServerErrorException("Could not create booking.");
   }
 
   @Post("/v2/bookings/:uid/cancel")
@@ -403,26 +392,5 @@ export class AppController {
       const error = err as Error;
       throw new InternalServerErrorException(error?.message);
     }
-  }
-
-  private handleBookingErrors(
-    err: Error | HttpError | unknown,
-    type?: "recurring" | `instant` | "no-show"
-  ): void {
-    const errMsg =
-      type === "no-show"
-        ? `Error while marking no-show.`
-        : `Error while creating ${type ? type + " " : ""}booking.`;
-    if (err instanceof HttpError) {
-      const httpError = err as HttpError;
-      throw new HttpException(httpError?.message ?? errMsg, httpError?.statusCode ?? 500);
-    }
-
-    if (err instanceof Error) {
-      const error = err as Error;
-      throw new InternalServerErrorException(error?.message ?? errMsg);
-    }
-
-    throw new InternalServerErrorException(errMsg);
   }
 }
