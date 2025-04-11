@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import type { Dispatch, ReactElement, ReactNode, SetStateAction } from "react";
-import React, { cloneElement } from "react";
+import React, { cloneElement, useEffect } from "react";
 import { Toaster } from "sonner";
 
 import { useRedirectToLoginIfUnauthenticated } from "@calcom/features/auth/lib/hooks/useRedirectToLoginIfUnauthenticated";
