@@ -9,16 +9,22 @@ import { useFlagMap } from "@calcom/features/flags/context/provider";
 import { useEmailVerifyCheck } from "@calcom/trpc/react/hooks/useEmailVerifyCheck";
 import useMeQuery from "@calcom/trpc/react/hooks/useMeQuery";
 
+export enum ShowOnboardingStaus {
+  LOADING = "loading",
+  YES = "yes",
+  NO = "no",
+}
+
 const shouldShowOnboarding = (
   user: Pick<User, "createdDate" | "completedOnboarding"> & {
     organizationId: number | null;
   }
 ) => {
-  return (
-    !user.completedOnboarding &&
+  return !user.completedOnboarding &&
     !user.organizationId &&
     dayjs(user.createdDate).isAfter(ONBOARDING_INTRODUCED_AT)
-  );
+    ? ShowOnboardingStaus.YES
+    : ShowOnboardingStaus.NO;
 };
 
 export const ONBOARDING_INTRODUCED_AT = dayjs("September 1 2021").toISOString();
@@ -40,10 +46,10 @@ export function useRedirectToOnboardingIfNeeded() {
 
   const needsEmailVerification = !email?.isVerified && flags["email-verification"];
 
-  const isRedirectingToOnboarding = user && shouldShowOnboarding(user);
+  const isRedirectingToOnboarding = user ? shouldShowOnboarding(user) : ShowOnboardingStaus.LOADING;
 
   useEffect(() => {
-    if (isRedirectingToOnboarding && !needsEmailVerification) {
+    if (isRedirectingToOnboarding === ShowOnboardingStaus.YES && !needsEmailVerification) {
       router.replace("/getting-started");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
