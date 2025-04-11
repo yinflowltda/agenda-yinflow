@@ -17,9 +17,8 @@ import { APP_NAME } from "@calcom/lib/constants";
 import { useFormbricks } from "@calcom/lib/formbricks-client";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { Button, ErrorBoundary, HeadSeo, SkeletonText } from "@calcom/ui";
+import { Loader } from "@calcom/ui";
 import classNames from "@calcom/ui/classNames";
-
-import Loader from "@components/Loader";
 
 import { SideBarContainer } from "./SideBar";
 import { TopNavContainer } from "./TopNav";
