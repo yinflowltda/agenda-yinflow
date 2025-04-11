@@ -93,14 +93,16 @@ export class AppController {
   ): Promise<ApiResponse<Partial<BookingResponse>>> {
     const { attendee, bookingFieldsResponses, eventTypeId, location, start, userId } = body;
 
+    return body;
+
     try {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-post-booking`, {
         body: JSON.stringify({
           userId,
-          eventTypeId,
           start,
-          bookingFieldsResponses,
+          eventTypeId,
           attendee,
+          bookingFieldsResponses,
           location,
         }),
         method: "POST",
