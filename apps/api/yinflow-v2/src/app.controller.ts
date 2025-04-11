@@ -88,6 +88,7 @@ export class AppController {
 
   @Post("/v2/bookings")
   async createBooking(
+    @Headers("Authorization") authorization: string,
     @Body() body: YinflowCreateBookingBody
   ): Promise<ApiResponse<Partial<BookingResponse>>> {
     const { attendee, bookingFieldsResponses, eventTypeId, location, start, userId } = body;
@@ -104,6 +105,7 @@ export class AppController {
         }),
         method: "POST",
         headers: {
+          apiKey: authorization,
           "Content-Type": "application/json",
         },
       });
