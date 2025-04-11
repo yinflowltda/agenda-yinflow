@@ -3,14 +3,11 @@
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import type { Dispatch, ReactElement, ReactNode, SetStateAction } from "react";
-import React, { cloneElement, useEffect } from "react";
+import React, { cloneElement } from "react";
 import { Toaster } from "sonner";
 
 import { useRedirectToLoginIfUnauthenticated } from "@calcom/features/auth/lib/hooks/useRedirectToLoginIfUnauthenticated";
-import {
-  ShowOnboardingStaus,
-  useRedirectToOnboardingIfNeeded,
-} from "@calcom/features/auth/lib/hooks/useRedirectToOnboardingIfNeeded";
+import { useRedirectToOnboardingIfNeeded } from "@calcom/features/auth/lib/hooks/useRedirectToOnboardingIfNeeded";
 import { KBarContent, KBarRoot } from "@calcom/features/kbar/Kbar";
 import TimezoneChangeDialog from "@calcom/features/settings/TimezoneChangeDialog";
 import { APP_NAME } from "@calcom/lib/constants";
@@ -127,16 +124,7 @@ export default function Shell(props: LayoutProps) {
   useAppTheme();
   const { isRedirectingToOnboarding, needsEmailVerification } = useRedirectToOnboardingIfNeeded();
 
-  useEffect(() => {
-    console.log({ pathname });
-  }, [pathname]);
-
-  if (
-    (isRedirectingToOnboarding !== ShowOnboardingStaus.YES &&
-      isRedirectingToOnboarding !== ShowOnboardingStaus.NO) ||
-    needsEmailVerification
-  )
-    return <div />;
+  if (!pathname?.startsWith("/getting-started")) return <div />;
 
   return !props.isPublic ? (
     <KBarWrapper withKBar>
