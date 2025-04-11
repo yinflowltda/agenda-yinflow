@@ -126,6 +126,10 @@ export default function Shell(props: LayoutProps) {
   useAppTheme();
   const { isRedirectingToOnboarding } = useRedirectToOnboardingIfNeeded();
 
+  useEffect(() => {
+    console.log({ isRedirectingToOnboarding });
+  }, [isRedirectingToOnboarding]);
+
   if (isRedirectingToOnboarding === ShowOnboardingStaus.LOADING) return <div />;
 
   return !props.isPublic ? (
