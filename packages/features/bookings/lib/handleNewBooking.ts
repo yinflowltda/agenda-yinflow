@@ -351,6 +351,7 @@ async function handler(
     view: req.body?.rescheduleUid ? "reschedule" : "booking",
     bookingFields: eventType.bookingFields,
   });
+
   const bookingData = await getBookingData({
     req,
     eventType,
