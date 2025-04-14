@@ -35,6 +35,21 @@ class YinflowRescheduleBookingBody {
   @IsOptional()
   reschedulingReason?: string;
 }
+class YinflowCreateSlotBody {
+  @IsNumber()
+  eventTypeId!: number;
+
+  @IsString()
+  slotStart!: number;
+
+  @IsNumber()
+  @IsOptional()
+  slotDuration?: number;
+
+  @IsNumber()
+  @IsOptional()
+  reservationDuration?: number;
+}
 
 class YinflowMarkAbsentBookingBody {
   @IsString()
@@ -363,6 +378,28 @@ export class AppController {
           apiKey: authorization,
         },
         method: "GET",
+      });
+
+      if (!response.ok) throw new HttpException(response.statusText, response.status);
+
+      return await response.json();
+    } catch (err) {
+      const error = err as Error;
+      throw new InternalServerErrorException(error?.message);
+    }
+  }
+
+  @Post("/v2/slots")
+  @Version(VERSION_NEUTRAL)
+  async postSlots(@Headers("Authorization") authorization: string, @Body() body: YinflowCreateSlotBody) {
+    try {
+      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-post-slots`, {
+        headers: {
+          apiKey: authorization,
+        },
+        body: JSON.stringify(body),
+        "Content-Type": "application/json",
+        method: "POST",
       });
 
       if (!response.ok) throw new HttpException(response.statusText, response.status);
