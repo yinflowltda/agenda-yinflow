@@ -396,9 +396,9 @@ export class AppController {
       const response = await fetch(`${AGENDA_BASE_URL}/yinflow-post-slots`, {
         headers: {
           apiKey: authorization,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-        "Content-Type": "application/json",
         method: "POST",
       });
 
