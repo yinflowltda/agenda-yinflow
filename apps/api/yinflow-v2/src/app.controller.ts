@@ -40,7 +40,7 @@ class YinflowCreateSlotBody {
   eventTypeId!: number;
 
   @IsString()
-  slotStart!: number;
+  slotStart!: string;
 
   @IsNumber()
   @IsOptional()
@@ -392,15 +392,24 @@ export class AppController {
   @Post("/v2/slots")
   @Version(VERSION_NEUTRAL)
   async postSlots(@Headers("Authorization") authorization: string, @Body() body: YinflowCreateSlotBody) {
+    const { eventTypeId, slotStart, reservationDuration, slotDuration } = body;
+
+    let params = "";
+
+    if (body.reservationDuration) params += `&reservationDuration=${reservationDuration}`;
+
+    if (body.slotDuration) params += `&slotDuration=${slotDuration}`;
+
     try {
-      const response = await fetch(`${AGENDA_BASE_URL}/yinflow-post-slots`, {
-        headers: {
-          apiKey: authorization,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-        method: "POST",
-      });
+      const response = await fetch(
+        `${AGENDA_BASE_URL}/yinflow-post-slots?eventTypeId=${eventTypeId}&slotStart=${slotStart}${params}`,
+        {
+          headers: {
+            apiKey: authorization,
+          },
+          method: "POST",
+        }
+      );
 
       if (!response.ok) throw new HttpException(response.statusText, response.status);
 
