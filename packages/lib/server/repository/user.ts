@@ -1,3 +1,5 @@
+import type { z } from "zod";
+
 import { whereClauseForOrgWithSlugOrRequestedSlug } from "@calcom/ee/organizations/lib/orgDomains";
 import logger from "@calcom/lib/logger";
 import { safeStringify } from "@calcom/lib/safeStringify";
@@ -909,5 +911,33 @@ export class UserRepository {
       },
     });
     return users.map(withSelectedCalendars);
+  }
+
+  static async updateStripeCustomerId({
+    id,
+    stripeCustomerId,
+    existingMetadata,
+  }: {
+    id: number;
+    stripeCustomerId: string;
+    existingMetadata: z.infer<typeof userMetadata>;
+  }) {
+    return prisma.user.update({
+      where: { id },
+      data: { metadata: { ...existingMetadata, stripeCustomerId } },
+    });
+  }
+
+  static async updateWhitelistWorkflows({
+    id,
+    whitelistWorkflows,
+  }: {
+    id: number;
+    whitelistWorkflows: boolean;
+  }) {
+    return prisma.user.update({
+      where: { id },
+      data: { whitelistWorkflows },
+    });
   }
 }

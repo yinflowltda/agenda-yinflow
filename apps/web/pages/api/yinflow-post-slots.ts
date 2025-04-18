@@ -1,5 +1,3 @@
-import duration from "dayjs/plugin/duration";
-import utc from "dayjs/plugin/utc";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { uuid } from "short-uuid";
 import { z } from "zod";
@@ -10,10 +8,6 @@ import { defaultHandler, defaultResponder } from "@calcom/lib/server";
 import type { ReserveSlotInput_2024_09_04, ReserveSlotOutput_2024_09_04 } from "@calcom/platform-types";
 import type { EventType } from "@calcom/prisma/client";
 import type { SelectedSlots } from "@calcom/prisma/client";
-
-// Apply plugins
-dayjs.extend(utc);
-dayjs.extend(duration);
 
 const DEFAULT_RESERVATION_DURATION = 5;
 

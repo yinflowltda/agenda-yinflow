@@ -10,14 +10,14 @@ import { useForm } from "react-hook-form";
 import { Toaster } from "sonner";
 import { z } from "zod";
 
-import { APP_NAME, IS_CALCOM, IS_EUROPE, WEBSITE_URL } from "@calcom/lib/constants";
+import { APP_NAME, IS_CALCOM, WEBSITE_URL } from "@calcom/lib/constants";
 import { isENVDev } from "@calcom/lib/env";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import useTheme from "@calcom/lib/hooks/useTheme";
 import { signupSchema as apiSignupSchema } from "@calcom/prisma/zod-utils";
 import type { inferSSRProps } from "@calcom/types/inferSSRProps";
-import { Button, HeadSeo } from "@calcom/ui";
 import classNames from "@calcom/ui/classNames";
+import { Button } from "@calcom/ui/components/button";
 
 import type { getServerSideProps } from "@lib/signup/getServerSideProps";
 
@@ -115,7 +115,7 @@ export default function Signup({ prepopulateFormValues, redirectUrl }: SignupPro
 
   return (
     <>
-      {IS_CALCOM && !IS_EUROPE ? (
+      {IS_CALCOM ? (
         <>
           {process.env.NEXT_PUBLIC_GTM_ID && (
             <>
@@ -141,8 +141,12 @@ export default function Signup({ prepopulateFormValues, redirectUrl }: SignupPro
             </>
           )}
           <DubAnalytics
+            apiHost="/_proxy/dub"
             cookieOptions={{
               domain: isENVDev ? undefined : `.${new URL(WEBSITE_URL).hostname}`,
+            }}
+            domainsConfig={{
+              refer: "refer.cal.com",
             }}
           />
         </>
@@ -155,7 +159,6 @@ export default function Signup({ prepopulateFormValues, redirectUrl }: SignupPro
           "[--cal-brand-emphasis:#101010]"
         )}>
         <div className="grid w-full max-w-[1440px] grid-cols-1 grid-rows-1 overflow-hidden rounded-3xl bg-white lg:grid-cols-2">
-          <HeadSeo title={t("sign_up")} description={t("sign_up")} />
           {/* Left side */}
           <div className="ml-auto mr-auto mt-0 flex w-full max-w-xl flex-col px-4 pt-6 lg:mt-12">
             <div className="flex flex-col gap-2">

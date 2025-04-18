@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { trpc } from "@calcom/trpc/react";
-import { Button, Icon } from "@calcom/ui";
+import { Button } from "@calcom/ui/button";
+import { Icon } from "@calcom/ui/icon";
 
 import ApplicationNotFoundModal from "@components/getting-started/components/ApplicationNotFoundModal";
 
@@ -23,7 +24,7 @@ const AssignTerms = ({ nextStep }: AssignTermsProps) => {
   const [applicationNotFoundModalIsVisible, setApplicationNotFoundModalIsVisible] = useState(false);
   const [termsIsAssigned, setTermsIsAssigned] = useState(false);
   const [professionalInfo, setProfessionalInfo] = useState<ProfessionalInfo | null>(null);
-  const [user] = trpc.viewer.me.useSuspenseQuery();
+  const [user] = trpc.viewer.me.get.useSuspenseQuery();
   const { t } = useLocale();
 
   useEffect(() => {
@@ -93,6 +94,9 @@ const AssignTerms = ({ nextStep }: AssignTermsProps) => {
             customCss="button { background-color: #06C6A3 !important; border: none; }"
             onLoad={(data) => {
               if (data.completed_submitter) setTermsIsAssigned(true);
+            }}
+            completedMessage={{
+              title: "Contrato Assinado com Sucesso",
             }}
           />
         ) : (

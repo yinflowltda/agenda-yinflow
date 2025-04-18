@@ -24,6 +24,7 @@ dayjs.extend(relativeTime);
 dayjs.extend(timeZone);
 dayjs.extend(toArray);
 dayjs.extend(utc);
+dayjs.extend(timeZone);
 dayjs.extend(minmax);
 dayjs.extend(duration);
 

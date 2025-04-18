@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 import { prisma } from "@calcom/prisma";
 import { credentialForCalendarServiceSelect } from "@calcom/prisma/selects/credential";
@@ -200,8 +200,9 @@ export class SelectedCalendarRepository {
     return nextBatch;
   }
 
-  static async findMany({ where, select, orderBy }: any) {
-    return (await prisma.selectedCalendar.findMany({ where, select, orderBy })) as any;
+  static async findMany({ where, select, orderBy }: FindManyArgs) {
+    const args = Prisma.validator<Prisma.SelectedCalendarFindManyArgs>()({ where, select, orderBy });
+    return await prisma.selectedCalendar.findMany(args);
   }
 
   static async findUniqueOrThrow({ where }: { where: Prisma.SelectedCalendarWhereInput }) {

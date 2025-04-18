@@ -1,8 +1,7 @@
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 import type { NextApiRequest } from "next";
 
 import dayjs from "@calcom/dayjs";
+import type { BookingHandlerInput } from "@calcom/features/bookings/lib/handleNewBooking";
 import handleNewBooking from "@calcom/features/bookings/lib/handleNewBooking";
 import { defaultHandler, defaultResponder } from "@calcom/lib/server";
 import type {
@@ -12,29 +11,12 @@ import type {
 import type { EventType } from "@calcom/prisma/client";
 import { EventTypeMetaDataSchema } from "@calcom/prisma/zod-utils";
 
-interface OAuthRequestParams {
-  platformClientId: string;
-  platformRescheduleUrl: string;
-  platformCancelUrl: string;
-  platformBookingUrl: string;
-  platformBookingLocation?: string;
-  arePlatformEmailsEnabled: boolean;
-}
-
-interface BookingRequest extends NextApiRequest, OAuthRequestParams {
-  userId: number;
-}
-
 interface BookingRequestBody extends CreateBookingInput_2024_08_13 {
   userId: number;
 }
 interface BookingInstantRequestBody extends CreateInstantBookingInput_2024_08_13 {
   userId: number;
 }
-
-// Apply plugins
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 const CreationSource = {
   API_V2: "API_V2",
@@ -106,7 +88,7 @@ const validateBookingLengthInMinutes = (
 const createBookingRequest = async (
   request: NextApiRequest,
   body: BookingRequestBody | BookingInstantRequestBody
-): Promise<BookingRequest> => {
+): Promise<BookingHandlerInput> => {
   const bodyTransformed = await transformInputCreateBooking(body);
 
   const newRequest = { ...request };
@@ -117,7 +99,7 @@ const createBookingRequest = async (
   Object.assign(newRequest, { userId, platformBookingLocation: location });
   newRequest.body = { ...bodyTransformed, noEmail: false, creationSource: CreationSource.API_V2 };
 
-  return newRequest as unknown as BookingRequest;
+  return newRequest as unknown as BookingHandlerInput;
 };
 
 async function handler(req: NextApiRequest) {

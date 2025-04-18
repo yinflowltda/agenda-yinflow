@@ -1,5 +1,3 @@
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { checkApiKey } from "@calcom/app-store/check-api-key";
@@ -20,10 +18,6 @@ import { getAvailableSlots } from "@calcom/trpc/server/routers/viewer/slots/util
 interface GetAvailableSlots {
   slots: Record<string, { time: string; attendees?: number; bookingUid?: string }[]>;
 }
-
-// Apply plugins
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 const transformGetSlotsQuery = async (query: GetSlotsInput_2024_09_04) => {
   const eventType = await getEventType(query);
@@ -70,12 +64,12 @@ const getEventType = async (input: GetSlotsInput_2024_09_04) => {
     if ("eventTypeSlug" in input) {
       const user = await prisma.user.findFirst({
         where: {
-          username: input.username,
+          username: (input as any).username,
         },
       });
 
       if (!user) {
-        throw new Error(`User with username ${input.username} not found`);
+        throw new Error(`User with username ${(input as any).username} not found`);
       }
       return await prisma.eventType.findFirst({
         where: {
@@ -349,7 +343,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     timeZone,
   };
 
-  const queryTransformed = await transformGetSlotsQuery(query);
+  const queryTransformed = await transformGetSlotsQuery(query as any);
 
   const availableSlots: GetAvailableSlots = await getAvailableSlots({
     input: {

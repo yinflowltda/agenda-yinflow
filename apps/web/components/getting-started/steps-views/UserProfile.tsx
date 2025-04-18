@@ -6,7 +6,12 @@ import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { md } from "@calcom/lib/markdownIt";
 import turndown from "@calcom/lib/turndownService";
 import { trpc } from "@calcom/trpc/react";
-import { Button, Editor, ImageUploader, Label, UserAvatar, showToast } from "@calcom/ui";
+import { UserAvatar } from "@calcom/ui/components/avatar";
+import { Button } from "@calcom/ui/components/button";
+import { Editor } from "@calcom/ui/components/editor";
+import { Label } from "@calcom/ui/components/form";
+import { ImageUploader } from "@calcom/ui/components/image-uploader";
+import { showToast } from "@calcom/ui/components/toast";
 
 interface UserProfileProps {
   nextStep: () => void;
@@ -22,7 +27,7 @@ const DIRECTUS_TOKEN = process.env.NEXT_PUBLIC_DIRECTUS_TOKEN || "";
 const SUPABASE_TOKEN = process.env.NEXT_PUBLIC_SUPABASE_API_KEY || "";
 
 const UserProfile = ({ nextStep }: UserProfileProps) => {
-  const [user] = trpc.viewer.me.useSuspenseQuery();
+  const [user] = trpc.viewer.me.get.useSuspenseQuery();
   const { t } = useLocale();
   const avatarRef = useRef<HTMLInputElement>(null);
   const { setValue, handleSubmit, getValues } = useForm<FormData>({
@@ -35,7 +40,7 @@ const UserProfile = ({ nextStep }: UserProfileProps) => {
   const [firstRender, setFirstRender] = useState(true);
 
   // Create a separate mutation for avatar updates
-  const avatarMutation = trpc.viewer.updateProfile.useMutation({
+  const avatarMutation = trpc.viewer.me.updateProfile.useMutation({
     onSuccess: async (data) => {
       showToast(t("your_user_profile_updated_successfully"), "success");
       setImageSrc(data.avatarUrl ?? "");
@@ -46,7 +51,7 @@ const UserProfile = ({ nextStep }: UserProfileProps) => {
   });
 
   // Original mutation remains for onboarding completion
-  const mutation = trpc.viewer.updateProfile.useMutation({
+  const mutation = trpc.viewer.me.updateProfile.useMutation({
     onSuccess: async () => {
       try {
         if (eventTypes?.length === 0) {

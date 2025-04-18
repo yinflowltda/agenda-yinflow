@@ -1,9 +1,11 @@
+"use client";
+
 import { usePathname } from "next/navigation";
 
 import useMediaQuery from "@calcom/lib/hooks/useMediaQuery";
 import classNames from "@calcom/ui/classNames";
 
-export default function Logo({
+export function Logo({
   small,
   icon,
   inline = true,

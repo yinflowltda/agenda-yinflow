@@ -2,9 +2,11 @@ import { useRouter } from "next/navigation";
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { telemetryEventTypes, useTelemetry } from "@calcom/lib/telemetry";
+import { useTelemetry } from "@calcom/lib/hooks/useTelemetry";
+import { telemetryEventTypes } from "@calcom/lib/telemetry";
 import { trpc } from "@calcom/trpc/react";
-import { Button, Input } from "@calcom/ui";
+import { Button } from "@calcom/ui/button";
+import { Input } from "@calcom/ui/form";
 
 enum CertificateRegistrationStatus {
   PASSWORD_ERROR = "Senha do certificado inválida.",
@@ -18,7 +20,7 @@ const DIRECTUS_TOKEN = process.env.NEXT_PUBLIC_DIRECTUS_TOKEN || "";
 
 const AddCertificate = () => {
   const router = useRouter();
-  const [user] = trpc.viewer.me.useSuspenseQuery();
+  const [user] = trpc.viewer.me.get.useSuspenseQuery();
   const telemetry = useTelemetry();
   const pickerRef = useRef<HTMLInputElement>(null);
 
