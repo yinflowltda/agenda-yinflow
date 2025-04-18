@@ -17,7 +17,6 @@ import { getSuccessPageLocationMessage, guessEventLocationType } from "@calcom/a
 import { getEventTypeAppData } from "@calcom/app-store/utils";
 import type { ConfigType } from "@calcom/dayjs";
 import dayjs from "@calcom/dayjs";
-import { getOrgFullOrigin } from "@calcom/ee/organizations/lib/orgDomains";
 import {
   useEmbedNonStylesConfig,
   useIsBackgroundTransparent,
@@ -30,11 +29,7 @@ import {
   TITLE_FIELD,
 } from "@calcom/features/bookings/lib/SystemField";
 import { cpfMask } from "@calcom/features/form-builder/utils";
-import {
-  formatToLocalizedDate,
-  formatToLocalizedTime,
-  formatToLocalizedTimezone,
-} from "@calcom/lib/date-fns";
+import { formatToLocalizedDate, formatToLocalizedTime, formatToLocalizedTimezone } from "@calcom/lib/dayjs";
 import type { nameObjectSchema } from "@calcom/lib/event";
 import { getEventName } from "@calcom/lib/event";
 import useGetBrandingColours from "@calcom/lib/getBrandColours";
@@ -42,24 +37,22 @@ import { useCompatSearchParams } from "@calcom/lib/hooks/useCompatSearchParams";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { useRouterQuery } from "@calcom/lib/hooks/useRouterQuery";
 import useTheme from "@calcom/lib/hooks/useTheme";
+import { RefundPolicy } from "@calcom/lib/payment/types";
 import { getEveryFreqFor } from "@calcom/lib/recurringStrings";
 import { getIs24hClockFromLocalStorage, isBrowserLocale24h } from "@calcom/lib/timeFormat";
 import { localStorage } from "@calcom/lib/webstorage";
 import { BookingStatus, SchedulingType } from "@calcom/prisma/enums";
 import { bookingMetadataSchema } from "@calcom/prisma/zod-utils";
 import { trpc } from "@calcom/trpc/react";
-import {
-  Alert,
-  Avatar,
-  Badge,
-  Button,
-  EmptyScreen,
-  HeadSeo,
-  Icon,
-  TextArea,
-  showToast,
-  useCalcomTheme,
-} from "@calcom/ui";
+import { Alert } from "@calcom/ui/components/alert";
+import { Avatar } from "@calcom/ui/components/avatar";
+import { Badge } from "@calcom/ui/components/badge";
+import { Button } from "@calcom/ui/components/button";
+import { EmptyScreen } from "@calcom/ui/components/empty-screen";
+import { TextArea } from "@calcom/ui/components/form";
+import { Icon } from "@calcom/ui/components/icon";
+import { showToast } from "@calcom/ui/components/toast";
+import { useCalcomTheme } from "@calcom/ui/styles";
 import PageWrapper from "@calcom/web/components/PageWrapper";
 import CancelBooking from "@calcom/web/components/booking/CancelBooking";
 import RejectBooking from "@calcom/web/components/booking/RejectBooking";
@@ -168,7 +161,7 @@ export default function Success(props: PageProps) {
   const routerQuery = useRouterQuery();
   const pathname = usePathname();
   const searchParams = useCompatSearchParams();
-  const { eventType, bookingInfo, requiresLoginToUpdate, orgSlug, rescheduledToUid } = props;
+  const { eventType, bookingInfo, previousBooking, requiresLoginToUpdate, rescheduledToUid } = props;
   const [purchaseDate, setPurchaseDate] = useState<dayjs.Dayjs | null>(null);
   const [absentHost, setAbsentHost] = useState<boolean>(false);
   const [eventTypes, setEventTypes] = useState<EventType | null>(null);
@@ -201,9 +194,12 @@ export default function Success(props: PageProps) {
     rescheduleLocation = bookingInfo.responses.location.optionValue;
   }
 
-  const locationVideoCallUrl: string | undefined = bookingMetadataSchema.parse(
-    bookingInfo?.metadata || {}
-  )?.videoCallUrl;
+  const parsedBookingMetadata = bookingMetadataSchema.parse(bookingInfo?.metadata || {});
+  const bookingWithParsedMetadata = {
+    ...bookingInfo,
+    metadata: parsedBookingMetadata,
+  };
+  const locationVideoCallUrl = bookingWithParsedMetadata.metadata?.videoCallUrl;
 
   const status = bookingInfo?.status;
   const reschedule = bookingInfo.status === BookingStatus.ACCEPTED;
@@ -422,11 +418,27 @@ export default function Success(props: PageProps) {
       return t(`needs_to_be_confirmed_or_rejected${titleSuffix}`);
     }
     if (bookingInfo.user) {
-      return t(`${titlePrefix}emailed_you_and_attendees${titleSuffix}`, {
-        user: bookingInfo.user.name || bookingInfo.user.email,
+      const isAttendee = bookingInfo.attendees.find((attendee) => attendee.email === session?.user?.email);
+      const attendee = bookingInfo.attendees[0]?.name || bookingInfo.attendees[0]?.email || "Nameless";
+      const host = bookingInfo.user.name || bookingInfo.user.email;
+      if (isHost) {
+        return t(`${titlePrefix}emailed_host_and_attendee${titleSuffix}`, {
+          host,
+          attendee,
+        });
+      }
+      if (isAttendee) {
+        return t(`${titlePrefix}emailed_host_and_attendee${titleSuffix}`, {
+          host,
+          attendee,
+        });
+      }
+      return t(`${titlePrefix}emailed_host_and_attendee${titleSuffix}`, {
+        host,
+        attendee,
       });
     }
-    return t(`emailed_you_and_attendees${titleSuffix}`);
+    return t(`emailed_host_and_attendee${titleSuffix}`);
   }
 
   // This is a weird case where the same route can be opened in booking flow as a success page or as a booking detail page from the app
@@ -436,9 +448,6 @@ export default function Success(props: PageProps) {
     brandColor: props.profile.brandColor,
     darkBrandColor: props.profile.darkBrandColor,
   });
-  const title = t(
-    `booking_${needsConfirmation ? "submitted" : "confirmed"}${props.recurringBookings ? "_recurring" : ""}`
-  );
 
   const locationToDisplay = getSuccessPageLocationMessage(
     locationVideoCallUrl ? locationVideoCallUrl : location,
@@ -729,7 +738,6 @@ export default function Success(props: PageProps) {
           </Link>
         </div>
       )}
-      <HeadSeo origin={getOrgFullOrigin(orgSlug)} title={title} description={title} />
       <BookingPageTagManager eventType={eventType as any} />
       <main className={classNames(shouldAlignCentrally ? "mx-auto" : "", isEmbed ? "" : "max-w-3xl")}>
         <div className={classNames("overflow-y-auto", isEmbed ? "" : "z-50 ")}>
@@ -806,7 +814,37 @@ export default function Success(props: PageProps) {
                               t("booking_with_payment_cancelled")}
                             {props.paymentStatus.success &&
                               !props.paymentStatus.refunded &&
-                              t("booking_with_payment_cancelled_already_paid")}
+                              (() => {
+                                const refundPolicy = eventType?.metadata?.apps?.stripe?.refundPolicy;
+                                const refundDaysCount = eventType?.metadata?.apps?.stripe?.refundDaysCount;
+
+                                // Handle missing team or event type owner (same in processPaymentRefund.ts)
+                                if (!eventType?.teamId && !eventType?.owner) {
+                                  return t("booking_with_payment_cancelled_no_refund");
+                                }
+
+                                // Handle DAYS policy with expired refund window
+                                else if (refundPolicy === RefundPolicy.DAYS && refundDaysCount) {
+                                  const startTime = new Date(bookingInfo.startTime);
+                                  const cancelTime = new Date();
+                                  const daysDiff = Math.floor(
+                                    (cancelTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24)
+                                  );
+
+                                  if (daysDiff > refundDaysCount) {
+                                    return t("booking_with_payment_cancelled_refund_window_expired");
+                                  }
+                                }
+                                // Handle NEVER policy
+                                else if (refundPolicy === RefundPolicy.NEVER) {
+                                  return t("booking_with_payment_cancelled_no_refund");
+                                }
+
+                                // Handle ALWAYS policy
+                                else {
+                                  return t("booking_with_payment_cancelled_already_paid");
+                                }
+                              })()}
                             {props.paymentStatus.refunded && t("booking_with_payment_cancelled_refunded")}
                           </h4>
                         )}
@@ -818,6 +856,17 @@ export default function Success(props: PageProps) {
                               {isCancelled ? t("reason") : t("reschedule_reason")}
                             </div>
                             <div className="col-span-2 last:mb-0">{cancellationReason}</div>
+                          </>
+                        )}
+                        {previousBooking && (
+                          <>
+                            <div className="font-medium">{t("rescheduled_by")}</div>
+                            <div className="col-span-2 mb-6 last:mb-0">
+                              <p className="break-words">{previousBooking?.rescheduledBy}</p>
+                              <Link className="text-sm underline" href={`/booking/${previousBooking?.uid}`}>
+                                {t("original_booking")}
+                              </Link>
+                            </div>
                           </>
                         )}
                         <div className="font-medium">{t("what")}</div>

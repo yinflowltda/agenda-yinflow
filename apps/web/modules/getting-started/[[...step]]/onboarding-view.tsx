@@ -1,9 +1,9 @@
 "use client";
 
+import type { TFunction } from "i18next";
 import { signOut } from "next-auth/react";
-import type { TFunction } from "next-i18next";
 import { usePathname, useRouter } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useTransition } from "react";
 import { Toaster } from "sonner";
 import { z } from "zod";
 
@@ -12,8 +12,11 @@ import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { useParamsWithFallback } from "@calcom/lib/hooks/useParamsWithFallback";
 import { trpc } from "@calcom/trpc";
 import type { inferSSRProps } from "@calcom/types/inferSSRProps";
-import { Button, Icon, StepCard, Steps } from "@calcom/ui";
 import classNames from "@calcom/ui/classNames";
+import { Button } from "@calcom/ui/components/button";
+import { StepCard } from "@calcom/ui/components/card";
+import { Steps } from "@calcom/ui/components/form";
+import { Icon } from "@calcom/ui/components/icon";
 
 import type { getServerSideProps } from "@lib/getting-started/[[...step]]/getServerSideProps";
 
@@ -112,8 +115,9 @@ const OnboardingPage = () => {
   const params = useParamsWithFallback();
 
   const router = useRouter();
-  const [user] = trpc.viewer.me.useSuspenseQuery();
+  const [user] = trpc.viewer.me.get.useSuspenseQuery();
   const { t } = useLocale();
+  const [isNextStepLoading, startTransition] = useTransition();
 
   const result = stepRouteSchema.safeParse({
     ...params,
@@ -147,7 +151,9 @@ const OnboardingPage = () => {
   const goToNextStep = () => {
     const nextIndex = currentStepIndex + 1;
     const newStep = steps[nextIndex];
-    router.push(`/getting-started/${stepTransform(newStep)}`);
+    startTransition(() => {
+      router.push(`/getting-started/${stepTransform(newStep)}`);
+    });
   };
 
   return (
@@ -188,9 +194,13 @@ const OnboardingPage = () => {
                 {currentStep === "user-settings" && (
                   <UserSettings nextStep={goToNextStep} hideUsername={from === "signup"} />
                 )}
-                {currentStep === "connected-calendar" && <ConnectedCalendars nextStep={goToNextStep} />}
+                {currentStep === "connected-calendar" && (
+                  <ConnectedCalendars nextStep={goToNextStep} isPageLoading={isNextStepLoading} />
+                )}
 
-                {currentStep === "connected-video" && <ConnectedVideoStep nextStep={goToNextStep} />}
+                {currentStep === "connected-video" && (
+                  <ConnectedVideoStep nextStep={goToNextStep} isPageLoading={isNextStepLoading} />
+                )}
 
                 {currentStep === "setup-availability" && (
                   <SetupAvailability nextStep={goToNextStep} defaultScheduleId={user.defaultScheduleId} />

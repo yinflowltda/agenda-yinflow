@@ -2,7 +2,8 @@ import { useCallback, useState } from "react";
 
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { trpc } from "@calcom/trpc/react";
-import { Button, TextArea } from "@calcom/ui";
+import { Button } from "@calcom/ui/components/button";
+import { TextArea } from "@calcom/ui/components/form";
 
 type Props = {
   booking: {
